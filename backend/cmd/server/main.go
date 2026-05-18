@@ -6,28 +6,29 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+
+	"github.com/ShashankShekhar9839/rationale/internal/db"
 )
 
 func main() {
 
-	// Load .env file
 	err := godotenv.Load()
 
 	if err != nil {
 		log.Println("No .env file found")
 	}
 
-	// Create gin router
-	router := gin.Default()
+	// Connect database
+	db.ConnectDatabase()
 
-	// Test route
+	router := gin.Default()  // this line creates a gin server 
+
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "Server is running",
+			"message": "Server running",
 		})
 	})
 
-	// Get port from env
 	port := os.Getenv("PORT")
 
 	if port == "" {
@@ -36,6 +37,5 @@ func main() {
 
 	log.Println("Server running on port", port)
 
-	// Start server
 	router.Run(":" + port)
 }
