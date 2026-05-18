@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/ShashankShekhar9839/rationale/internal/db"
+	"github.com/ShashankShekhar9839/rationale/internal/user"
 )
 
 func main() {
@@ -28,6 +29,13 @@ func main() {
 			"message": "Server running",
 		})
 	})
+
+	// user routes 
+
+	router.POST("/users", user.CreateUser)
+	router.GET("/users", user.GetUsers)
+	router.GET("/users/:id", user.GetUserByID)
+
 
 	port := os.Getenv("PORT")
 
