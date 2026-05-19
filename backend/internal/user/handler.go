@@ -3,8 +3,9 @@ package user
 import (
 	"net/http"
 
+	"github.com/ShashankShekhar9839/rationale/internal/dto"
 	"github.com/ShashankShekhar9839/rationale/internal/models"
-	"github.com/ShashankShekhar9839/rationale/internal/repositories"
+	"github.com/ShashankShekhar9839/rationale/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,10 +24,10 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	err = repositories.CreateUser(&user)
+	err = services.CreateUser(&user)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 
@@ -35,13 +36,13 @@ func CreateUser(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "User created successfully",
-		"data":    user,
+		"data":    dto.ToUserResponse(user),
 	})
 }
 
 func GetUsers(c *gin.Context) {
 
-	users, err := repositories.GetUsers()
+	users, err := services.GetUsers()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -52,7 +53,7 @@ func GetUsers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": users,
+		"data": dto.ToUserResponseList(users),
 	})
 }
 
@@ -60,7 +61,7 @@ func GetUserByID(c *gin.Context) {
 
 	id := c.Param("id")
 
-	user, err := repositories.GetUserByID(id)
+	user, err := services.GetUserByID(id)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -71,6 +72,6 @@ func GetUserByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": user,
+		"data": dto.ToUserResponse(user),
 	})
 }

@@ -29,3 +29,12 @@ func GetUserByID(id string) (models.User, error) {
 
 	return user, result.Error
 }
+
+func GetUserByEmail(email string) (models.User, error) {
+
+	var user models.User
+
+	result := db.DB.Where("email = ?", email).First(&user)
+
+	return user, result.Error
+}
