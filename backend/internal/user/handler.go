@@ -75,3 +75,35 @@ func GetUserByID(c *gin.Context) {
 		"data": dto.ToUserResponse(user),
 	})
 }
+
+func LoginUser(c *gin.Context) {
+
+	var request dto.LoginRequest
+
+	err := c.ShouldBindJSON(&request)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+
+		return
+	}
+
+	token, err := services.LoginUser(
+		request.Email,
+		request.Password,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
+}

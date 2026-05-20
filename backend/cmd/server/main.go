@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/ShashankShekhar9839/rationale/internal/db"
+	"github.com/ShashankShekhar9839/rationale/internal/middleware"
 	"github.com/ShashankShekhar9839/rationale/internal/user"
 )
 
@@ -30,11 +31,22 @@ func main() {
 		})
 	})
 
+	router.POST("/login", user.LoginUser)
+
 	// user routes 
 
 	router.POST("/users", user.CreateUser)
-	router.GET("/users", user.GetUsers)
-	router.GET("/users/:id", user.GetUserByID)
+    router.GET(
+	"/users",
+	middleware.AuthMiddleware(),
+	user.GetUsers,
+    )
+
+    router.GET(
+	"/users/:id",
+	middleware.AuthMiddleware(),
+	user.GetUserByID,
+    )
 
 
 	port := os.Getenv("PORT")

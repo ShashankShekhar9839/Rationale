@@ -14,6 +14,12 @@ type UserResponse struct {
 	UpdatedAt time.Time
 }
 
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func ToUserResponse(user models.User) UserResponse {
 
 	return UserResponse{
