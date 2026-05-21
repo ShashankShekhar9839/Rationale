@@ -48,6 +48,12 @@ func main() {
 	user.GetUserByID,
     )
 
+	router.GET(
+	"/me",
+	middleware.AuthMiddleware(),
+	user.GetCurrentUser,
+    )
+
 
 	port := os.Getenv("PORT")
 

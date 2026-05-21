@@ -16,7 +16,6 @@ func CreateUser(user *models.User) error {
 		return errors.New("email already exists")
 	}
 
-	// Hash password before saving
 	hashedPassword, err := utils.HashPassword(user.Password)
 
 	if err != nil {
@@ -60,4 +59,8 @@ func LoginUser(email, password string) (string, error) {
 	}
 
 	return token, nil
+}
+
+func GetCurrentUser(userID uint) (models.User, error) {
+	return repositories.GetUserByUintID(userID)
 }

@@ -107,3 +107,33 @@ func LoginUser(c *gin.Context) {
 		"token": token,
 	})
 }
+
+func GetCurrentUser(c *gin.Context) {
+
+	userIDValue, exists := c.Get("user_id")
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User not authenticated",
+		})
+
+		return
+	}
+
+	// JWT stores numbers as float64
+	userID := uint(userIDValue.(float64))
+
+	user, err := services.GetCurrentUser(userID)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "User not found",
+		})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": dto.ToUserResponse(user),
+	})
+}
