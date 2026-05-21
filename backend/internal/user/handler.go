@@ -12,9 +12,9 @@ import (
 
 func CreateUser(c *gin.Context) {
 
-	var user models.User
+	var request dto.CreateUserRequest
 
-	err := c.ShouldBindJSON(&user)
+	err := c.ShouldBindJSON(&request)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -24,7 +24,13 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	err = services.CreateUser(&user)
+	user := models.User{
+	Name:     request.Name,
+	Email:    request.Email,
+	Password: request.Password,
+    }
+
+    err = services.CreateUser(&user)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

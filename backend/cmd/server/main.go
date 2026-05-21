@@ -1,67 +1,37 @@
 package main
 
 import (
-	"log"
-	"os"
-
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-
+	"github.com/ShashankShekhar9839/rationale/internal/config"
 	"github.com/ShashankShekhar9839/rationale/internal/db"
 	"github.com/ShashankShekhar9839/rationale/internal/middleware"
+	"github.com/ShashankShekhar9839/rationale/internal/models"
 	"github.com/ShashankShekhar9839/rationale/internal/user"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 
-	err := godotenv.Load()
+	config.LoadConfig()
 
-	if err != nil {
-		log.Println("No .env file found")
-	}
-
-	// Connect database
 	db.ConnectDatabase()
 
-	router := gin.Default()  // this line creates a gin server 
+	db.DB.AutoMigrate(&models.User{})
 
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "Server running",
-		})
-	})
+	router := gin.Default()
 
+	// Public Routes
+	router.POST("/users", user.CreateUser)
 	router.POST("/login", user.LoginUser)
 
-	// user routes 
+	// Protected Routes Group
+	protected := router.Group("/")
 
-	router.POST("/users", user.CreateUser)
-    router.GET(
-	"/users",
-	middleware.AuthMiddleware(),
-	user.GetUsers,
-    )
+	protected.Use(middleware.AuthMiddleware())
 
-    router.GET(
-	"/users/:id",
-	middleware.AuthMiddleware(),
-	user.GetUserByID,
-    )
+	protected.GET("/users", user.GetUsers)
+	protected.GET("/users/:id", user.GetUserByID)
+	protected.GET("/me", user.GetCurrentUser)
 
-	router.GET(
-	"/me",
-	middleware.AuthMiddleware(),
-	user.GetCurrentUser,
-    )
-
-
-	port := os.Getenv("PORT")
-
-	if port == "" {
-		port = "8080"
-	}
-
-	log.Println("Server running on port", port)
-
-	router.Run(":" + port)
+	router.Run(":" + config.AppConfig.ServerPort)
 }
