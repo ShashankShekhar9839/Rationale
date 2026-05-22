@@ -6,6 +6,7 @@ import (
 	"github.com/ShashankShekhar9839/rationale/internal/dto"
 	"github.com/ShashankShekhar9839/rationale/internal/models"
 	"github.com/ShashankShekhar9839/rationale/internal/services"
+	"github.com/ShashankShekhar9839/rationale/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,33 +18,37 @@ func CreateUser(c *gin.Context) {
 	err := c.ShouldBindJSON(&request)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			err.Error(),
+		)
 		return
 	}
 
 	user := models.User{
-	Name:     request.Name,
-	Email:    request.Email,
-	Password: request.Password,
-    }
+		Name:     request.Name,
+		Email:    request.Email,
+		Password: request.Password,
+	}
 
-    err = services.CreateUser(&user)
+	err = services.CreateUser(&user)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			err.Error(),
+		)
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "User created successfully",
-		"data":    dto.ToUserResponse(user),
-	})
+	utils.SuccessResponse(
+		c,
+		http.StatusCreated,
+		"User created successfully",
+		dto.ToUserResponse(user),
+	)
 }
 
 func GetUsers(c *gin.Context) {
@@ -51,16 +56,20 @@ func GetUsers(c *gin.Context) {
 	users, err := services.GetUsers()
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-
+		utils.ErrorResponse(
+			c,
+			http.StatusInternalServerError,
+			err.Error(),
+		)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": dto.ToUserResponseList(users),
-	})
+	utils.SuccessResponse(
+		c,
+		http.StatusOK,
+		"Users fetched successfully",
+		dto.ToUserResponseList(users),
+	)
 }
 
 func GetUserByID(c *gin.Context) {
@@ -70,16 +79,20 @@ func GetUserByID(c *gin.Context) {
 	user, err := services.GetUserByID(id)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "User not found",
-		})
-
+		utils.ErrorResponse(
+			c,
+			http.StatusNotFound,
+			"User not found",
+		)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": dto.ToUserResponse(user),
-	})
+	utils.SuccessResponse(
+		c,
+		http.StatusOK,
+		"User fetched successfully",
+		dto.ToUserResponse(user),
+	)
 }
 
 func LoginUser(c *gin.Context) {
@@ -89,10 +102,11 @@ func LoginUser(c *gin.Context) {
 	err := c.ShouldBindJSON(&request)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-
+		utils.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			err.Error(),
+		)
 		return
 	}
 
@@ -102,16 +116,22 @@ func LoginUser(c *gin.Context) {
 	)
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": err.Error(),
-		})
-
+		utils.ErrorResponse(
+			c,
+			http.StatusUnauthorized,
+			err.Error(),
+		)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"token": token,
-	})
+	utils.SuccessResponse(
+		c,
+		http.StatusOK,
+		"Login successful",
+		gin.H{
+			"token": token,
+		},
+	)
 }
 
 func GetCurrentUser(c *gin.Context) {
@@ -119,27 +139,31 @@ func GetCurrentUser(c *gin.Context) {
 	userIDValue, exists := c.Get("user_id")
 
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "User not authenticated",
-		})
-
+		utils.ErrorResponse(
+			c,
+			http.StatusUnauthorized,
+			"User not authenticated",
+		)
 		return
 	}
 
-	// JWT stores numbers as float64
 	userID := uint(userIDValue.(float64))
 
 	user, err := services.GetCurrentUser(userID)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "User not found",
-		})
-
+		utils.ErrorResponse(
+			c,
+			http.StatusNotFound,
+			"User not found",
+		)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": dto.ToUserResponse(user),
-	})
+	utils.SuccessResponse(
+		c,
+		http.StatusOK,
+		"Current user fetched successfully",
+		dto.ToUserResponse(user),
+	)
 }

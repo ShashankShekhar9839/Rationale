@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
+	"github.com/ShashankShekhar9839/rationale/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,9 +18,11 @@ func AuthMiddleware() gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Authorization header missing",
-			})
+	        utils.ErrorResponse(
+        	c,
+        	http.StatusUnauthorized,
+	      "Invalid token",
+          )
 
 			c.Abort()
 			return
@@ -31,9 +34,11 @@ func AuthMiddleware() gin.HandlerFunc {
 		tokenParts := strings.Split(authHeader, " ")
 
 		if len(tokenParts) != 2 {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid authorization format",
-			})
+          utils.ErrorResponse(
+	       c,
+	     http.StatusUnauthorized,
+	     "Invalid token",
+        )
 
 			c.Abort()
 			return
@@ -51,9 +56,11 @@ func AuthMiddleware() gin.HandlerFunc {
 		)
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid token",
-			})
+            utils.ErrorResponse(
+         	c,
+	       http.StatusUnauthorized,
+	      "Invalid token",
+        )
 
 			c.Abort()
 			return
@@ -62,9 +69,11 @@ func AuthMiddleware() gin.HandlerFunc {
 		claims, ok := token.Claims.(jwt.MapClaims)
 
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Invalid token claims",
-			})
+	    utils.ErrorResponse(
+	   c,
+	   http.StatusUnauthorized,
+	   "Invalid token",
+        )
 
 			c.Abort()
 			return
