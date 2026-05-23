@@ -16,7 +16,6 @@ func main() {
 
 	db.ConnectDatabase()
 
-	db.DB.AutoMigrate(&models.User{})
 
 	router := gin.Default()
 
