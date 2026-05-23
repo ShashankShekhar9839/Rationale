@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/ShashankShekhar9839/rationale/internal/config"
 	"github.com/ShashankShekhar9839/rationale/internal/db"
+	"github.com/ShashankShekhar9839/rationale/internal/handlers"
 	"github.com/ShashankShekhar9839/rationale/internal/middleware"
-	"github.com/ShashankShekhar9839/rationale/internal/models"
 	"github.com/ShashankShekhar9839/rationale/internal/user"
 
 	"github.com/gin-gonic/gin"
@@ -16,21 +16,74 @@ func main() {
 
 	db.ConnectDatabase()
 
-
 	router := gin.Default()
 
-	// Public Routes
-	router.POST("/users", user.CreateUser)
-	router.POST("/login", user.LoginUser)
+	// API Group
+	api := router.Group("/api")
 
-	// Protected Routes Group
-	protected := router.Group("/")
+	// Auth Routes
+	authRoutes := api.Group("/auth")
 
-	protected.Use(middleware.AuthMiddleware())
+	{
+		authRoutes.POST(
+			"/register",
+			user.CreateUser,
+		)
 
-	protected.GET("/users", user.GetUsers)
-	protected.GET("/users/:id", user.GetUserByID)
-	protected.GET("/me", user.GetCurrentUser)
+		authRoutes.POST(
+			"/login",
+			user.LoginUser,
+		)
+	}
 
+	// Protected Routes
+	protected := api.Group("/")
+
+	protected.Use(
+		middleware.AuthMiddleware(),
+	)
+
+	{
+		protected.GET(
+			"/users",
+			user.GetUsers,
+		)
+
+		protected.GET(
+			"/users/:id",
+			user.GetUserByID,
+		)
+
+		protected.GET(
+			"/me",
+			user.GetCurrentUser,
+		)
+	}
+
+	// Organization Routes
+	organizationRoutes := api.Group("/organizations")
+
+	organizationRoutes.Use(
+		middleware.AuthMiddleware(),
+	)
+
+	{
+		organizationRoutes.POST(
+			"",
+			handlers.CreateOrganization,
+		)
+
+		organizationRoutes.GET(
+			"",
+			handlers.GetOrganizations,
+		)
+
+		organizationRoutes.GET(
+			"/:id",
+			handlers.GetOrganizationByID,
+		)
+	}
+
+	// Run Server
 	router.Run(":" + config.AppConfig.ServerPort)
 }
