@@ -5,83 +5,54 @@ import (
 
 	"github.com/ShashankShekhar9839/rationale/internal/dto"
 	"github.com/ShashankShekhar9839/rationale/internal/services"
+	"github.com/ShashankShekhar9839/rationale/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
 func CreateOrganization(c *gin.Context) {
+	var req dto.CreateOrganizationRequest
 
-	var request dto.CreateOrganizationRequest
-
-	if err := c.ShouldBindJSON(&request); err != nil {
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	userIDValue, exists := c.Get("userID")
-
 	if !exists {
-
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "unauthorized",
-		})
-
+		utils.ErrorResponse(c, http.StatusUnauthorized, "User not authenticated")
 		return
 	}
 
 	userID := userIDValue.(uint)
 
-	organization, err := services.CreateOrganization(
-		request,
-		userID,
-	)
-
+	orgResp, err := services.CreateOrganization(req, userID)
 	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "failed to create organization",
-		})
-
+		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, organization)
+	utils.SuccessResponse(c, http.StatusCreated, "Organization created", orgResp)
 }
 
 func GetOrganizations(c *gin.Context) {
-
-	organizations, err := services.GetOrganizations()
-
+	orgs, err := services.GetOrganizations()
 	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "failed to fetch organizations",
-		})
-
+		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, organizations)
+	utils.SuccessResponse(c, http.StatusOK, "Organizations fetched", orgs)
 }
 
 func GetOrganizationByID(c *gin.Context) {
-
 	id := c.Param("id")
 
-	organization, err := services.GetOrganizationByID(id)
-
+	org, err := services.GetOrganizationByID(id)
 	if err != nil {
-
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "organization not found",
-		})
-
+		utils.ErrorResponse(c, http.StatusNotFound, "Organization not found")
 		return
 	}
 
-	c.JSON(http.StatusOK, organization)
+	utils.SuccessResponse(c, http.StatusOK, "Organization fetched", org)
 }
