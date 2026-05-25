@@ -22,6 +22,7 @@ func NewWorkspaceHandler(
 
 func (h *WorkspaceHandler) CreateWorkspace(c *gin.Context) {
 	var req dto.CreateWorkspaceRequest
+	
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -29,8 +30,9 @@ func (h *WorkspaceHandler) CreateWorkspace(c *gin.Context) {
 		})
 		return
 	}
+	userID := c.MustGet("userID").(uint)
 
-	workspace, err := h.workspaceService.CreateWorkspace(req)
+	workspace, err := h.workspaceService.CreateWorkspace(userID, req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "failed to create workspace",

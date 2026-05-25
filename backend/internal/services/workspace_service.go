@@ -7,7 +7,10 @@ import (
 )
 
 type WorkspaceService interface {
-	CreateWorkspace(req dto.CreateWorkspaceRequest) (*models.Workspace, error)
+	CreateWorkspace(
+    userID uint,
+    req dto.CreateWorkspaceRequest,
+) (*models.Workspace, error)
 }
 
 type workspaceService struct {
@@ -23,6 +26,7 @@ func NewWorkspaceService(
 }
 
 func (s *workspaceService) CreateWorkspace(
+	userID uint,
 	req dto.CreateWorkspaceRequest,
 ) (*models.Workspace, error) {
 
