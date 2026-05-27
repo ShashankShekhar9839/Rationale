@@ -107,6 +107,15 @@ workspaceRoutes.Use(
 		"",
 		workspaceHandler.CreateWorkspace,
 	)
+
+	workspaceRoutes.GET(
+	"",
+	workspaceHandler.GetWorkspaces,
+)
+workspaceRoutes.GET(
+	"/:id",
+	workspaceHandler.GetWorkspaceByID,
+)
 }
 
 	// Run Server
