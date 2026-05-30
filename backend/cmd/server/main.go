@@ -95,6 +95,32 @@ func main() {
 		)
 	}
 
+	// Decision
+decisionRepo := repositories.NewDecisionRepository(
+	db.DB,
+)
+
+decisionService := services.NewDecisionService(
+	decisionRepo,
+)
+
+decisionHandler := handlers.NewDecisionHandler(
+	decisionService,
+)
+
+// Decision Version
+decisionVersionRepo := repositories.NewDecisionVersionRepository(
+	db.DB,
+)
+
+decisionVersionService := services.NewDecisionVersionService(
+	decisionVersionRepo,
+)
+
+decisionVersionHandler := handlers.NewDecisionVersionHandler(
+	decisionVersionService,
+)
+
 	// Workspace Routes
 workspaceRoutes := api.Group("/workspaces")
 
@@ -143,29 +169,34 @@ projectRoutes.Use(
 	)
 
 	projectRoutes.GET(
-	"",
-	projectHandler.GetProjects,
-    )
+		"",
+		projectHandler.GetProjects,
+	)
 
 	projectRoutes.GET(
-	"/:id",
-	projectHandler.GetProjectByID,
-)
+		"/:id",
+		projectHandler.GetProjectByID,
+	)
+
+	projectRoutes.GET(
+		"/:id/decisions",
+		decisionHandler.GetDecisionsByProjectID,
+	)
 }
 
-// decision 
+// // decision 
 
-  decisionRepo := repositories.NewDecisionRepository(
-	db.DB,
-)
+//   decisionRepo := repositories.NewDecisionRepository(
+// 	db.DB,
+// )
 
-decisionService := services.NewDecisionService(
-	decisionRepo,
-)
+// decisionService := services.NewDecisionService(
+// 	decisionRepo,
+// )
 
-decisionHandler := handlers.NewDecisionHandler(
-	decisionService,
-)
+// decisionHandler := handlers.NewDecisionHandler(
+// 	decisionService,
+// )
 
 decisionRoutes := api.Group("/decisions")
 
@@ -180,19 +211,19 @@ decisionRoutes.Use(
 	)
 }
 
-//    decision version 
+// //    decision version 
 
-   decisionVersionRepo := repositories.NewDecisionVersionRepository(
-	db.DB,
-)
+//    decisionVersionRepo := repositories.NewDecisionVersionRepository(
+// 	db.DB,
+// )
 
-decisionVersionService := services.NewDecisionVersionService(
-	decisionVersionRepo,
-)
+// decisionVersionService := services.NewDecisionVersionService(
+// 	decisionVersionRepo,
+// )
 
-decisionVersionHandler := handlers.NewDecisionVersionHandler(
-	decisionVersionService,
-)
+// decisionVersionHandler := handlers.NewDecisionVersionHandler(
+// 	decisionVersionService,
+// )
 {
 decisionRoutes := api.Group("/decisions")
 decisionRoutes.Use(

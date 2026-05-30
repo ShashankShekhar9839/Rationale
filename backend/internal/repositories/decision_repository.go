@@ -18,6 +18,10 @@ type DecisionRepository interface {
 		userID uint,
 		projectID uint,
 	) (bool, error)
+
+		GetDecisionsByProjectID(
+		projectID uint,
+	) ([]models.Decision, error)
 }
 
 func NewDecisionRepository(
@@ -62,4 +66,25 @@ func (r *decisionRepository) CheckProjectOwnership(
 	}
 
 	return count > 0, nil
+}
+
+func (r *decisionRepository) GetDecisionsByProjectID(
+	projectID uint,
+) ([]models.Decision, error) {
+
+	var decisions []models.Decision
+
+	err := r.db.
+		Where(
+			"project_id = ?",
+			projectID,
+		).
+		Order("created_at DESC").
+		Find(&decisions).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return decisions, nil
 }

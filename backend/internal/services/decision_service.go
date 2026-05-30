@@ -17,6 +17,10 @@ type DecisionService interface {
 		userID uint,
 		req dto.CreateDecisionRequest,
 	) (*models.Decision, error)
+
+	GetDecisionsByProjectID(
+	projectID uint,
+) ([]models.Decision, error)
 }
 
 func NewDecisionService(
@@ -62,4 +66,13 @@ func (s *decisionService) CreateDecision(
 	}
 
 	return decision, nil
+}
+
+func (s *decisionService) GetDecisionsByProjectID(
+	projectID uint,
+) ([]models.Decision, error) {
+
+	return s.decisionRepo.GetDecisionsByProjectID(
+		projectID,
+	)
 }

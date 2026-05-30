@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/ShashankShekhar9839/rationale/internal/dto"
 	"github.com/ShashankShekhar9839/rationale/internal/services"
@@ -55,4 +56,59 @@ func (h *DecisionHandler) CreateDecision(
 	}
 
 	c.JSON(http.StatusCreated, response)
+}
+
+func (h *DecisionHandler) GetDecisionsByProjectID(
+	c *gin.Context,
+) {
+
+	projectIDParam := c.Param("id")
+
+	projectID, err := strconv.ParseUint(
+		projectIDParam,
+		10,
+		64,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid project id",
+		})
+		return
+	}
+
+	decisions, err := h.decisionService.GetDecisionsByProjectID(
+		uint(projectID),
+	)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to fetch decisions",
+		})
+		return
+	}
+
+	response := make(
+		[]dto.DecisionResponse,
+		0,
+		len(decisions),
+	)
+
+	for _, decision := range decisions {
+
+		response = append(
+			response,
+			dto.DecisionResponse{
+				ID:          decision.ID,
+				Title:       decision.Title,
+				Description: decision.Description,
+				ProjectID:   decision.ProjectID,
+			},
+		)
+	}
+
+	c.JSON(
+		http.StatusOK,
+		response,
+	)
 }
