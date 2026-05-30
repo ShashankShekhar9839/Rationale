@@ -29,8 +29,14 @@ func main() {
 
 	router := gin.Default()
 
+	// Enable CORS for local frontend during development
+	router.Use(middleware.CORSMiddleware())
+
 	// API Group
 	api := router.Group("/api")
+
+	// Health check
+	api.GET("/health", handlers.Health)
 
 	// Auth Routes
 	authRoutes := api.Group("/auth")
