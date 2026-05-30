@@ -180,6 +180,50 @@ decisionRoutes.Use(
 	)
 }
 
+//    decision version 
+
+   decisionVersionRepo := repositories.NewDecisionVersionRepository(
+	db.DB,
+)
+
+decisionVersionService := services.NewDecisionVersionService(
+	decisionVersionRepo,
+)
+
+decisionVersionHandler := handlers.NewDecisionVersionHandler(
+	decisionVersionService,
+)
+{
+decisionRoutes := api.Group("/decisions")
+decisionRoutes.Use(
+	middleware.AuthMiddleware(),
+) 
+
+
+	decisionRoutes.POST(
+	"/:id/versions",
+	decisionVersionHandler.CreateVersion,
+)
+
+decisionRoutes.GET(
+	"/:id/versions",
+	decisionVersionHandler.GetVersionsByDecisionID,
+)
+}
+
+versionRoutes := api.Group("/decision-versions")
+
+versionRoutes.Use(
+	middleware.AuthMiddleware(),
+)
+
+{
+	versionRoutes.GET(
+		"/:id",
+		decisionVersionHandler.GetVersionByID,
+	)
+}
+
 	// Run Server
 	router.Run(":" + config.AppConfig.ServerPort)
 }
