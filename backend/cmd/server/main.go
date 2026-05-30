@@ -102,7 +102,7 @@ workspaceRoutes.Use(
 	middleware.AuthMiddleware(),
 )
 
-{
+  {
 	workspaceRoutes.POST(
 		"",
 		workspaceHandler.CreateWorkspace,
@@ -116,6 +116,68 @@ workspaceRoutes.GET(
 	"/:id",
 	workspaceHandler.GetWorkspaceByID,
 )
+   }
+
+//    project routes
+
+projectRepo := repositories.NewProjectRepository(db.DB)
+
+projectService := services.NewProjectService(
+	projectRepo,
+)
+
+projectHandler := handlers.NewProjectHandler(
+	projectService,
+)
+
+projectRoutes := api.Group("/projects")
+
+projectRoutes.Use(
+	middleware.AuthMiddleware(),
+)
+
+{
+	projectRoutes.POST(
+		"",
+		projectHandler.CreateProject,
+	)
+
+	projectRoutes.GET(
+	"",
+	projectHandler.GetProjects,
+    )
+
+	projectRoutes.GET(
+	"/:id",
+	projectHandler.GetProjectByID,
+)
+}
+
+// decision 
+
+  decisionRepo := repositories.NewDecisionRepository(
+	db.DB,
+)
+
+decisionService := services.NewDecisionService(
+	decisionRepo,
+)
+
+decisionHandler := handlers.NewDecisionHandler(
+	decisionService,
+)
+
+decisionRoutes := api.Group("/decisions")
+
+decisionRoutes.Use(
+	middleware.AuthMiddleware(),
+)
+
+{
+	decisionRoutes.POST(
+		"",
+		decisionHandler.CreateDecision,
+	)
 }
 
 	// Run Server
