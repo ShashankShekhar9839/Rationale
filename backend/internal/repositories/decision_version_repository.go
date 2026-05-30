@@ -25,6 +25,10 @@ type DecisionVersionRepository interface {
 	GetVersionByID(
 	versionID uint,
 ) (*models.DecisionVersion, error)
+
+	UpdateVersion(
+	version *models.DecisionVersion,
+) error
 }
 
 func NewDecisionVersionRepository(
@@ -101,4 +105,11 @@ func (r *decisionVersionRepository) GetVersionByID(
 	}
 
 	return &version, nil
+}
+
+func (r *decisionVersionRepository) UpdateVersion(
+	version *models.DecisionVersion,
+) error {
+
+	return r.db.Save(version).Error
 }

@@ -96,30 +96,31 @@ func main() {
 	}
 
 	// Decision
-decisionRepo := repositories.NewDecisionRepository(
-	db.DB,
-)
+	decisionRepo := repositories.NewDecisionRepository(
+		db.DB,
+	)
 
-decisionService := services.NewDecisionService(
-	decisionRepo,
-)
+	// Decision Version
+	decisionVersionRepo := repositories.NewDecisionVersionRepository(
+		db.DB,
+	)
 
-decisionHandler := handlers.NewDecisionHandler(
-	decisionService,
-)
+	decisionService := services.NewDecisionService(
+		decisionRepo,
+		decisionVersionRepo,
+	)
 
-// Decision Version
-decisionVersionRepo := repositories.NewDecisionVersionRepository(
-	db.DB,
-)
+	decisionHandler := handlers.NewDecisionHandler(
+		decisionService,
+	)
 
-decisionVersionService := services.NewDecisionVersionService(
-	decisionVersionRepo,
-)
+	decisionVersionService := services.NewDecisionVersionService(
+		decisionVersionRepo,
+	)
 
-decisionVersionHandler := handlers.NewDecisionVersionHandler(
-	decisionVersionService,
-)
+	decisionVersionHandler := handlers.NewDecisionVersionHandler(
+		decisionVersionService,
+	)
 
 	// Workspace Routes
 workspaceRoutes := api.Group("/workspaces")
@@ -209,6 +210,13 @@ decisionRoutes.Use(
 		"",
 		decisionHandler.CreateDecision,
 	)
+
+	decisionRoutes.GET(
+    "/:id",
+    decisionHandler.GetDecisionByID,
+   )
+
+
 }
 
 // //    decision version 
@@ -252,6 +260,10 @@ versionRoutes.Use(
 	versionRoutes.GET(
 		"/:id",
 		decisionVersionHandler.GetVersionByID,
+	)
+	versionRoutes.PATCH(
+		"/:id",
+		decisionVersionHandler.UpdateVersion,
 	)
 }
 

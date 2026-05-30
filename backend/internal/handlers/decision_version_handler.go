@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -162,4 +163,57 @@ func (h *DecisionVersionHandler) GetVersionByID(
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *DecisionVersionHandler) UpdateVersion(
+	c *gin.Context,
+) {
+
+	var req dto.UpdateVersionRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	idParam := c.Param("id")
+
+	versionID, err := strconv.ParseUint(
+		idParam,
+		10,
+		64,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid version id",
+		})
+		return
+	}
+
+	err = h.versionService.UpdateVersion(
+		uint(versionID),
+		req,
+	)
+
+	if err != nil {
+
+		if errors.Is(err, services.ErrNotLatestVersion) {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to update version",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "version updated",
+	})
 }

@@ -22,6 +22,8 @@ type DecisionRepository interface {
 		GetDecisionsByProjectID(
 		projectID uint,
 	) ([]models.Decision, error)
+
+	GetDecisionByID(id uint) (*models.Decision, error)
 }
 
 func NewDecisionRepository(
@@ -87,4 +89,20 @@ func (r *decisionRepository) GetDecisionsByProjectID(
 	}
 
 	return decisions, nil
+
+	
+}
+
+func (r *decisionRepository) GetDecisionByID(
+    id uint,
+) (*models.Decision, error) {
+
+    var decision models.Decision
+
+    err := r.db.First(&decision, id).Error
+    if err != nil {
+        return nil, err
+    }
+
+    return &decision, nil
 }

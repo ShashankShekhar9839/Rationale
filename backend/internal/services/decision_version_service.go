@@ -9,6 +9,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var ErrNotLatestVersion = errors.New("not latest version")
+
 type DecisionVersionService interface {
 	CreateVersion(
 		decisionID uint,
@@ -22,6 +24,10 @@ type DecisionVersionService interface {
 GetVersionByID(
 	versionID uint,
 ) (*models.DecisionVersion, error)
+	UpdateVersion(
+	versionID uint,
+	req dto.UpdateVersionRequest,
+) error
 }
 
 type decisionVersionService struct {
@@ -87,4 +93,32 @@ func (s *decisionVersionService) GetVersionByID(
 	return s.versionRepo.GetVersionByID(
 		versionID,
 	)
+}
+
+func (s *decisionVersionService) UpdateVersion(
+	versionID uint,
+	req dto.UpdateVersionRequest,
+) error {
+
+	version, err := s.versionRepo.GetVersionByID(versionID)
+	if err != nil {
+		return err
+	}
+
+	latestVersion, err := s.versionRepo.GetLatestVersion(
+		version.DecisionID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if version.ID != latestVersion.ID {
+		return ErrNotLatestVersion
+	}
+
+	version.Label = req.Label
+	version.Content = req.Content
+
+	return s.versionRepo.UpdateVersion(version)
 }

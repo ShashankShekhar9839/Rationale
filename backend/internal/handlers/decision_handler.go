@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/ShashankShekhar9839/rationale/internal/dto"
 	"github.com/ShashankShekhar9839/rationale/internal/services"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type DecisionHandler struct {
@@ -111,4 +113,53 @@ func (h *DecisionHandler) GetDecisionsByProjectID(
 		http.StatusOK,
 		response,
 	)
+}
+
+func (h *DecisionHandler) GetDecisionByID(
+    c *gin.Context,
+) {
+    idParam := c.Param("id")
+
+    decisionID, err := strconv.ParseUint(
+        idParam,
+        10,
+        64,
+    )
+
+    if err != nil {
+        c.JSON(
+            http.StatusBadRequest,
+            gin.H{
+                "error": "invalid decision id",
+            },
+        )
+        return
+    }
+
+    decision, err := h.decisionService.GetDecisionByID(
+        uint(decisionID),
+    )
+
+    if err != nil {
+
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            c.JSON(
+                http.StatusNotFound,
+                gin.H{
+                    "error": "decision not found",
+                },
+            )
+            return
+        }
+
+        c.JSON(
+            http.StatusInternalServerError,
+            gin.H{
+                "error": "failed to fetch decision",
+            },
+        )
+        return
+    }
+
+    c.JSON(http.StatusOK, decision)
 }

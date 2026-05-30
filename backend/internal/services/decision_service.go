@@ -6,10 +6,12 @@ import (
 	"github.com/ShashankShekhar9839/rationale/internal/dto"
 	"github.com/ShashankShekhar9839/rationale/internal/models"
 	"github.com/ShashankShekhar9839/rationale/internal/repositories"
+	"gorm.io/gorm"
 )
 
 type decisionService struct {
 	decisionRepo repositories.DecisionRepository
+	versionRepo  repositories.DecisionVersionRepository
 }
 
 type DecisionService interface {
@@ -21,13 +23,19 @@ type DecisionService interface {
 	GetDecisionsByProjectID(
 	projectID uint,
 ) ([]models.Decision, error)
+
+GetDecisionByID(
+    decisionID uint,
+) (*dto.DecisionDetailsResponse, error)
 }
 
 func NewDecisionService(
 	decisionRepo repositories.DecisionRepository,
+	versionRepo repositories.DecisionVersionRepository,
 ) DecisionService {
 	return &decisionService{
 		decisionRepo: decisionRepo,
+		versionRepo:  versionRepo,
 	}
 }
 
@@ -76,3 +84,29 @@ func (s *decisionService) GetDecisionsByProjectID(
 		projectID,
 	)
 }
+
+func (s *decisionService) GetDecisionByID(
+    decisionID uint,
+) (*dto.DecisionDetailsResponse, error) {
+	decision, err := s.decisionRepo.GetDecisionByID(decisionID)
+	if err != nil {
+		return nil, err
+	}
+
+	latestVersion, err := s.versionRepo.GetLatestVersion(decisionID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	response := &dto.DecisionDetailsResponse{
+		ID:            decision.ID,
+		Title:         decision.Title,
+		Description:   decision.Description,
+		ProjectID:     decision.ProjectID,
+		LatestVersion: latestVersion,
+	}
+
+	return response, nil
+}
+
+
