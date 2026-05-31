@@ -10,30 +10,15 @@ type decisionVersionRepository struct {
 }
 
 type DecisionVersionRepository interface {
-	GetLatestVersion(
-		decisionID uint,
-	) (*models.DecisionVersion, error)
-
-	CreateVersion(
-		version *models.DecisionVersion,
-	) error
-
-	GetVersionsByDecisionID(
-		decisionID uint,
-	) ([]models.DecisionVersion, error)
-
-	GetVersionByID(
-	versionID uint,
-) (*models.DecisionVersion, error)
-
-	UpdateVersion(
-	version *models.DecisionVersion,
-) error
+	GetLatestVersion(decisionID uint) (*models.DecisionVersion, error)
+	CheckDecisionOwnership(decisionID uint, userID uint) (bool, error)
+	CreateVersion(version *models.DecisionVersion) error
+	GetVersionsByDecisionID(decisionID uint) ([]models.DecisionVersion, error)
+	GetVersionByID(versionID uint, userID uint) (*models.DecisionVersion, error)
+	UpdateVersion(version *models.DecisionVersion) error
 }
 
-func NewDecisionVersionRepository(
-	db *gorm.DB,
-) DecisionVersionRepository {
+func NewDecisionVersionRepository(db *gorm.DB) DecisionVersionRepository {
 	return &decisionVersionRepository{
 		db: db,
 	}
@@ -46,6 +31,28 @@ func (r *decisionVersionRepository) CreateVersion(
 	return r.db.Create(version).Error
 }
 
+func (r *decisionVersionRepository) CheckDecisionOwnership(
+	decisionID uint,
+	userID uint,
+) (bool, error) {
+
+	var count int64
+
+	err := r.db.
+		Model(&models.Decision{}).
+		Joins("JOIN projects ON projects.id = decisions.project_id").
+		Joins("JOIN workspaces ON workspaces.id = projects.workspace_id").
+		Joins("JOIN organizations ON organizations.id = workspaces.organization_id").
+		Where("decisions.id = ? AND organizations.owner_id = ?", decisionID, userID).
+		Count(&count).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
 func (r *decisionVersionRepository) GetLatestVersion(
 	decisionID uint,
 ) (*models.DecisionVersion, error) {
@@ -53,10 +60,7 @@ func (r *decisionVersionRepository) GetLatestVersion(
 	var version models.DecisionVersion
 
 	err := r.db.
-		Where(
-			"decision_id = ?",
-			decisionID,
-		).
+		Where("decision_id = ?", decisionID).
 		Order("version_number DESC").
 		First(&version).Error
 
@@ -74,10 +78,7 @@ func (r *decisionVersionRepository) GetVersionsByDecisionID(
 	var versions []models.DecisionVersion
 
 	err := r.db.
-		Where(
-			"decision_id = ?",
-			decisionID,
-		).
+		Where("decision_id = ?", decisionID).
 		Order("version_number DESC").
 		Find(&versions).Error
 
@@ -90,15 +91,19 @@ func (r *decisionVersionRepository) GetVersionsByDecisionID(
 
 func (r *decisionVersionRepository) GetVersionByID(
 	versionID uint,
+	userID uint,
 ) (*models.DecisionVersion, error) {
 
 	var version models.DecisionVersion
 
 	err := r.db.
-		First(
-			&version,
-			versionID,
-		).Error
+		Model(&models.DecisionVersion{}).
+		Joins("JOIN decisions ON decisions.id = decision_versions.decision_id").
+		Joins("JOIN projects ON projects.id = decisions.project_id").
+		Joins("JOIN workspaces ON workspaces.id = projects.workspace_id").
+		Joins("JOIN organizations ON organizations.id = workspaces.organization_id").
+		Where("decision_versions.id = ? AND organizations.owner_id = ?", versionID, userID).
+		First(&version).Error
 
 	if err != nil {
 		return nil, err

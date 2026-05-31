@@ -122,41 +122,70 @@ export default function AppShell({ children }: Props) {
   }, [routeIds.decisionId, routeIds.projectId, token]);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadProjects() {
       if (!token || !activeWorkspaceId) {
         setActiveProjects([]);
         return;
       }
 
+      setActiveProjects([]);
+      setActiveDecisions([]);
+
       try {
+        const projects = await projectService.getProjectsByWorkspace(
+          activeWorkspaceId,
+          token,
+        );
+
+        if (cancelled) return;
         setActiveProjects(
-          await projectService.getProjectsByWorkspace(activeWorkspaceId, token),
+          projects.filter((project) => project.workspace_id === activeWorkspaceId),
         );
       } catch {
-        setActiveProjects([]);
+        if (!cancelled) setActiveProjects([]);
       }
     }
 
     loadProjects();
+
+    return () => {
+      cancelled = true;
+    };
   }, [activeWorkspaceId, token]);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadDecisions() {
       if (!token || !activeProjectId) {
         setActiveDecisions([]);
         return;
       }
 
+      setActiveDecisions([]);
+
       try {
+        const decisions = await decisionService.getDecisionsByProject(
+          activeProjectId,
+          token,
+        );
+
+        if (cancelled) return;
         setActiveDecisions(
-          await decisionService.getDecisionsByProject(activeProjectId, token),
+          decisions.filter((decision) => decision.project_id === activeProjectId),
         );
       } catch {
-        setActiveDecisions([]);
+        if (!cancelled) setActiveDecisions([]);
       }
     }
 
     loadDecisions();
+
+    return () => {
+      cancelled = true;
+    };
   }, [activeProjectId, token]);
 
   return (

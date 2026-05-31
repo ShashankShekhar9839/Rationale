@@ -14,20 +14,22 @@ var ErrNotLatestVersion = errors.New("not latest version")
 type DecisionVersionService interface {
 	CreateVersion(
 		decisionID uint,
+		userID uint,
 		req dto.CreateDecisionVersionRequest,
 	) (*models.DecisionVersion, error)
-
 	GetVersionsByDecisionID(
-	decisionID uint,
-) ([]models.DecisionVersion, error)
-
-GetVersionByID(
-	versionID uint,
-) (*models.DecisionVersion, error)
+		decisionID uint,
+		userID uint,
+	) ([]models.DecisionVersion, error)
+	GetVersionByID(
+		versionID uint,
+		userID uint,
+	) (*models.DecisionVersion, error)
 	UpdateVersion(
-	versionID uint,
-	req dto.UpdateVersionRequest,
-) error
+		versionID uint,
+		userID uint,
+		req dto.UpdateVersionRequest,
+	) error
 }
 
 type decisionVersionService struct {
@@ -44,22 +46,27 @@ func NewDecisionVersionService(
 
 func (s *decisionVersionService) CreateVersion(
 	decisionID uint,
+	userID uint,
 	req dto.CreateDecisionVersionRequest,
 ) (*models.DecisionVersion, error) {
 
+	isOwner, err := s.versionRepo.CheckDecisionOwnership(decisionID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !isOwner {
+		return nil, errors.New("unauthorized decision access")
+	}
+
 	var nextVersionNumber uint = 1
 
-	latestVersion, err := s.versionRepo.GetLatestVersion(
-		decisionID,
-	)
-
+	latestVersion, err := s.versionRepo.GetLatestVersion(decisionID)
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, err
 		}
 	} else {
-		nextVersionNumber =
-			latestVersion.VersionNumber + 1
+		nextVersionNumber = latestVersion.VersionNumber + 1
 	}
 
 	version := &models.DecisionVersion{
@@ -79,36 +86,40 @@ func (s *decisionVersionService) CreateVersion(
 
 func (s *decisionVersionService) GetVersionsByDecisionID(
 	decisionID uint,
+	userID uint,
 ) ([]models.DecisionVersion, error) {
 
-	return s.versionRepo.GetVersionsByDecisionID(
-		decisionID,
-	)
+	isOwner, err := s.versionRepo.CheckDecisionOwnership(decisionID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !isOwner {
+		return nil, errors.New("unauthorized decision access")
+	}
+
+	return s.versionRepo.GetVersionsByDecisionID(decisionID)
 }
 
 func (s *decisionVersionService) GetVersionByID(
 	versionID uint,
+	userID uint,
 ) (*models.DecisionVersion, error) {
 
-	return s.versionRepo.GetVersionByID(
-		versionID,
-	)
+	return s.versionRepo.GetVersionByID(versionID, userID)
 }
 
 func (s *decisionVersionService) UpdateVersion(
 	versionID uint,
+	userID uint,
 	req dto.UpdateVersionRequest,
 ) error {
 
-	version, err := s.versionRepo.GetVersionByID(versionID)
+	version, err := s.versionRepo.GetVersionByID(versionID, userID)
 	if err != nil {
 		return err
 	}
 
-	latestVersion, err := s.versionRepo.GetLatestVersion(
-		version.DecisionID,
-	)
-
+	latestVersion, err := s.versionRepo.GetLatestVersion(version.DecisionID)
 	if err != nil {
 		return err
 	}

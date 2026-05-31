@@ -79,8 +79,11 @@ func (h *DecisionHandler) GetDecisionsByProjectID(
 		return
 	}
 
+	userID := c.MustGet("userID").(uint)
+
 	decisions, err := h.decisionService.GetDecisionsByProjectID(
 		uint(projectID),
+		userID,
 	)
 
 	if err != nil {
@@ -116,50 +119,53 @@ func (h *DecisionHandler) GetDecisionsByProjectID(
 }
 
 func (h *DecisionHandler) GetDecisionByID(
-    c *gin.Context,
+	c *gin.Context,
 ) {
-    idParam := c.Param("id")
+	idParam := c.Param("id")
 
-    decisionID, err := strconv.ParseUint(
-        idParam,
-        10,
-        64,
-    )
+	decisionID, err := strconv.ParseUint(
+		idParam,
+		10,
+		64,
+	)
 
-    if err != nil {
-        c.JSON(
-            http.StatusBadRequest,
-            gin.H{
-                "error": "invalid decision id",
-            },
-        )
-        return
-    }
+	if err != nil {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": "invalid decision id",
+			},
+		)
+		return
+	}
 
-    decision, err := h.decisionService.GetDecisionByID(
-        uint(decisionID),
-    )
+	userID := c.MustGet("userID").(uint)
 
-    if err != nil {
+	decision, err := h.decisionService.GetDecisionByID(
+		uint(decisionID),
+		userID,
+	)
 
-        if errors.Is(err, gorm.ErrRecordNotFound) {
-            c.JSON(
-                http.StatusNotFound,
-                gin.H{
-                    "error": "decision not found",
-                },
-            )
-            return
-        }
+	if err != nil {
 
-        c.JSON(
-            http.StatusInternalServerError,
-            gin.H{
-                "error": "failed to fetch decision",
-            },
-        )
-        return
-    }
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(
+				http.StatusNotFound,
+				gin.H{
+					"error": "decision not found",
+				},
+			)
+			return
+		}
 
-    c.JSON(http.StatusOK, decision)
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"error": "failed to fetch decision",
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, decision)
 }

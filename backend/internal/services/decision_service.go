@@ -21,12 +21,14 @@ type DecisionService interface {
 	) (*models.Decision, error)
 
 	GetDecisionsByProjectID(
-	projectID uint,
-) ([]models.Decision, error)
+		projectID uint,
+		userID uint,
+	) ([]models.Decision, error)
 
-GetDecisionByID(
-    decisionID uint,
-) (*dto.DecisionDetailsResponse, error)
+	GetDecisionByID(
+		decisionID uint,
+		userID uint,
+	) (*dto.DecisionDetailsResponse, error)
 }
 
 func NewDecisionService(
@@ -78,17 +80,20 @@ func (s *decisionService) CreateDecision(
 
 func (s *decisionService) GetDecisionsByProjectID(
 	projectID uint,
+	userID uint,
 ) ([]models.Decision, error) {
 
 	return s.decisionRepo.GetDecisionsByProjectID(
 		projectID,
+		userID,
 	)
 }
 
 func (s *decisionService) GetDecisionByID(
-    decisionID uint,
+	decisionID uint,
+	userID uint,
 ) (*dto.DecisionDetailsResponse, error) {
-	decision, err := s.decisionRepo.GetDecisionByID(decisionID)
+	decision, err := s.decisionRepo.GetDecisionByID(decisionID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -108,5 +113,3 @@ func (s *decisionService) GetDecisionByID(
 
 	return response, nil
 }
-
-

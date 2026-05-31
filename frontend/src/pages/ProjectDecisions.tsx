@@ -24,11 +24,15 @@ export default function ProjectDecisions() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadDecisions() {
       if (!token || !numericProjectId) return;
 
       setError("");
       setLoading(true);
+      setProject(null);
+      setDecisions([]);
 
       try {
         const [projectData, decisionList] = await Promise.all([
@@ -36,20 +40,30 @@ export default function ProjectDecisions() {
           decisionService.getDecisionsByProject(numericProjectId, token),
         ]);
 
+        if (cancelled) return;
         setProject(projectData);
-        setDecisions(decisionList);
+        setDecisions(
+          decisionList.filter(
+            (decision) => decision.project_id === numericProjectId,
+          ),
+        );
       } catch (err) {
+        if (cancelled) return;
         setError(
           err instanceof Error
             ? err.message
             : "Failed to load decisions for this project.",
         );
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     loadDecisions();
+
+    return () => {
+      cancelled = true;
+    };
   }, [numericProjectId, token]);
 
   if (!token) return <Navigate to="/login" replace />;
@@ -122,9 +136,6 @@ export default function ProjectDecisions() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="soft-badge">{decisions.length} decisions</span>
-            <Button type="button" onClick={() => setActivePanel("create")}>
-              New Decision
-            </Button>
           </div>
         </div>
       </section>

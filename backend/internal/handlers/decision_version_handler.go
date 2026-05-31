@@ -50,14 +50,17 @@ func (h *DecisionVersionHandler) CreateVersion(
 		return
 	}
 
+	userID := c.MustGet("userID").(uint)
+
 	version, err := h.versionService.CreateVersion(
 		uint(decisionID),
+		userID,
 		req,
 	)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "failed to create version",
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
@@ -92,13 +95,16 @@ func (h *DecisionVersionHandler) GetVersionsByDecisionID(
 		return
 	}
 
+	userID := c.MustGet("userID").(uint)
+
 	versions, err := h.versionService.GetVersionsByDecisionID(
 		uint(decisionID),
+		userID,
 	)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "failed to fetch versions",
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
@@ -143,8 +149,11 @@ func (h *DecisionVersionHandler) GetVersionByID(
 		return
 	}
 
+	userID := c.MustGet("userID").(uint)
+
 	version, err := h.versionService.GetVersionByID(
 		uint(versionID),
+		userID,
 	)
 
 	if err != nil {
@@ -195,6 +204,7 @@ func (h *DecisionVersionHandler) UpdateVersion(
 
 	err = h.versionService.UpdateVersion(
 		uint(versionID),
+		c.MustGet("userID").(uint),
 		req,
 	)
 

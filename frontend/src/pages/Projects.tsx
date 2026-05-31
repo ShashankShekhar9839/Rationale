@@ -23,11 +23,15 @@ export default function Projects() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadProjects() {
       if (!token || !numericWorkspaceId) return;
 
       setError("");
       setLoading(true);
+      setWorkspace(null);
+      setProjects([]);
 
       try {
         const [workspaceData, projectList] = await Promise.all([
@@ -35,20 +39,30 @@ export default function Projects() {
           projectService.getProjectsByWorkspace(numericWorkspaceId, token),
         ]);
 
+        if (cancelled) return;
         setWorkspace(workspaceData);
-        setProjects(projectList);
+        setProjects(
+          projectList.filter(
+            (project) => project.workspace_id === numericWorkspaceId,
+          ),
+        );
       } catch (err) {
+        if (cancelled) return;
         setError(
           err instanceof Error
             ? err.message
             : "Failed to load projects for this workspace.",
         );
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     loadProjects();
+
+    return () => {
+      cancelled = true;
+    };
   }, [numericWorkspaceId, token]);
 
   if (!token) {
@@ -110,9 +124,6 @@ export default function Projects() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="soft-badge">{projects.length} projects</span>
-            <Button type="button" onClick={() => setActivePanel("create")}>
-              New Project
-            </Button>
           </div>
         </div>
       </section>

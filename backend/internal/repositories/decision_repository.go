@@ -19,11 +19,12 @@ type DecisionRepository interface {
 		projectID uint,
 	) (bool, error)
 
-		GetDecisionsByProjectID(
+	GetDecisionsByProjectID(
 		projectID uint,
+		userID uint,
 	) ([]models.Decision, error)
 
-	GetDecisionByID(id uint) (*models.Decision, error)
+	GetDecisionByID(id uint, userID uint) (*models.Decision, error)
 }
 
 func NewDecisionRepository(
@@ -72,16 +73,22 @@ func (r *decisionRepository) CheckProjectOwnership(
 
 func (r *decisionRepository) GetDecisionsByProjectID(
 	projectID uint,
+	userID uint,
 ) ([]models.Decision, error) {
 
 	var decisions []models.Decision
 
 	err := r.db.
+		Model(&models.Decision{}).
+		Joins("JOIN projects ON projects.id = decisions.project_id").
+		Joins("JOIN workspaces ON workspaces.id = projects.workspace_id").
+		Joins("JOIN organizations ON organizations.id = workspaces.organization_id").
 		Where(
-			"project_id = ?",
+			"decisions.project_id = ? AND organizations.owner_id = ?",
 			projectID,
+			userID,
 		).
-		Order("created_at DESC").
+		Order("decisions.created_at DESC").
 		Find(&decisions).Error
 
 	if err != nil {
@@ -89,20 +96,25 @@ func (r *decisionRepository) GetDecisionsByProjectID(
 	}
 
 	return decisions, nil
-
-	
 }
 
 func (r *decisionRepository) GetDecisionByID(
-    id uint,
+	id uint,
+	userID uint,
 ) (*models.Decision, error) {
 
-    var decision models.Decision
+	var decision models.Decision
 
-    err := r.db.First(&decision, id).Error
-    if err != nil {
-        return nil, err
-    }
+	err := r.db.
+		Model(&models.Decision{}).
+		Joins("JOIN projects ON projects.id = decisions.project_id").
+		Joins("JOIN workspaces ON workspaces.id = projects.workspace_id").
+		Joins("JOIN organizations ON organizations.id = workspaces.organization_id").
+		Where("decisions.id = ? AND organizations.owner_id = ?", id, userID).
+		First(&decision).Error
+	if err != nil {
+		return nil, err
+	}
 
-    return &decision, nil
+	return &decision, nil
 }
