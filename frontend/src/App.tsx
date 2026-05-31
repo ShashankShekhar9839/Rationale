@@ -1,20 +1,43 @@
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
+import CreateOrganization from "./pages/CreateOrganization";
 
 export default function App() {
+  const { token, hasCompletedFirstSignup } = useAuth();
+  const unauthenticatedLandingPath = hasCompletedFirstSignup ? "/login" : "/signup";
+
   return (
-    <div
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
-    >
-      <Header />
-      <main style={{ flex: 1 }}>
-        <div className="container">
-            <h2>Shashank</h2>
-          <Home />
+    <div className="min-h-screen flex flex-col">
+      {token && <Header />}
+      <main className="flex-1">
+        <div className={token ? "container" : "mx-auto w-full max-w-6xl px-4"}>
+          <Routes>
+            {token ? (
+              <>
+                <Route path="/" element={<Home />} />
+                <Route path="/organization" element={<CreateOrganization />} />
+                <Route path="/login" element={<Navigate to="/" replace />} />
+                <Route path="/signup" element={<Navigate to="/" replace />} />
+              </>
+            ) : (
+              <>
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route
+                  path="*"
+                  element={<Navigate to={unauthenticatedLandingPath} replace />}
+                />
+              </>
+            )}
+          </Routes>
         </div>
       </main>
-      <Footer />
+      {token && <Footer />}
     </div>
   );
 }

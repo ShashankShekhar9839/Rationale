@@ -6,13 +6,13 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Welcome to Rationale</h1>
+      <h1 className="text-3xl font-bold mb-6">Welcome to Rationale</h1>
       <div className="card">
         {isLoading && <div>Loading status...</div>}
         {error && <div>Failed to load status</div>}
         {data && <div>API status: {data.status ?? JSON.stringify(data)}</div>}
       </div>
-      <div style={{ marginTop: 12 }}>
+      <div className="mt-3">
         <Button onClick={() => alert("Demo")}>Demo Button</Button>
       </div>
     </div>

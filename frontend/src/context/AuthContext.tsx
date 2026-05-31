@@ -9,7 +9,9 @@ type User = {
 type AuthContextType = {
   user: User | null
   token: string | null
+  hasCompletedFirstSignup: boolean
   login: (token: string, user?: User) => void
+  completeFirstSignup: () => void
   logout: () => void
 }
 
@@ -17,6 +19,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('rationale_token'))
+  const [hasCompletedFirstSignup, setHasCompletedFirstSignup] = useState(
+    () => localStorage.getItem('rationale_first_signup_complete') === 'true',
+  )
   const [user, setUser] = useState<User | null>(() => {
     const raw = localStorage.getItem('rationale_user')
     return raw ? JSON.parse(raw) : null
@@ -37,13 +42,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (u) setUser(u)
   }
 
+  const completeFirstSignup = () => {
+    setHasCompletedFirstSignup(true)
+    localStorage.setItem('rationale_first_signup_complete', 'true')
+  }
+
   const logout = () => {
     setToken(null)
     setUser(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, hasCompletedFirstSignup, login, completeFirstSignup, logout }}
+    >
       {children}
     </AuthContext.Provider>
   )
