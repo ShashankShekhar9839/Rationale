@@ -238,8 +238,9 @@ export default function Projects() {
             {!loading && projects.length > 0 && (
               <div className="grid gap-3">
                 {projects.map((project) => (
-                  <article
+                  <Link
                     key={project.id}
+                    to={`/projects/${project.id}/decisions`}
                     className="rounded-lg border border-slate-200 p-5 transition hover:border-[#339CFF] hover:shadow-md"
                   >
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -255,7 +256,7 @@ export default function Projects() {
                         Project
                       </span>
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             )}

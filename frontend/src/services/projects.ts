@@ -53,3 +53,13 @@ export async function createProject(
 
   return handleResponse<Project>(res);
 }
+
+export async function getProject(projectId: number, token: string): Promise<Project> {
+  const res = await fetch(`${API_BASE}/projects/${projectId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return handleResponse<Project>(res);
+}

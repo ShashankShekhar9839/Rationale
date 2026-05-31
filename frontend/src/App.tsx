@@ -7,6 +7,8 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import CreateOrganization from "./pages/CreateOrganization";
 import Projects from "./pages/Projects";
+import ProjectDecisions from "./pages/ProjectDecisions";
+import DecisionDocument from "./pages/DecisionDocument";
 
 export default function App() {
   const { token, hasCompletedFirstSignup } = useAuth();
@@ -23,6 +25,8 @@ export default function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/organization" element={<CreateOrganization />} />
                 <Route path="/workspaces/:workspaceId/projects" element={<Projects />} />
+                <Route path="/projects/:projectId/decisions" element={<ProjectDecisions />} />
+                <Route path="/decisions/:decisionId" element={<DecisionDocument />} />
                 <Route path="/login" element={<Navigate to="/" replace />} />
                 <Route path="/signup" element={<Navigate to="/" replace />} />
               </>
