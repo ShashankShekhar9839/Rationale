@@ -14,6 +14,11 @@ export default function AppShell({ children }: Props) {
   const { token, user, logout } = useAuth();
   const location = useLocation();
   const organization = orgService.getCurrentOrganization();
+  const [workspaceSearch, setWorkspaceSearch] = useState("");
+  const [collapsedWorkspaceIds, setCollapsedWorkspaceIds] = useState<number[]>(
+    [],
+  );
+  const [collapsedProjectIds, setCollapsedProjectIds] = useState<number[]>([]);
   const [workspaces, setWorkspaces] = useState<workspaceService.Workspace[]>([]);
   const [activeProjects, setActiveProjects] = useState<projectService.Project[]>(
     [],
@@ -40,6 +45,35 @@ export default function AppShell({ children }: Props) {
 
   const activeWorkspaceId = activeProject?.workspace_id || routeIds.workspaceId;
   const activeProjectId = activeProject?.id || routeIds.projectId;
+  const isWorkspaceCollapsed = (workspaceId: number) =>
+    collapsedWorkspaceIds.includes(workspaceId);
+  const isProjectCollapsed = (projectId: number) =>
+    collapsedProjectIds.includes(projectId);
+
+  function toggleWorkspace(workspaceId: number) {
+    setCollapsedWorkspaceIds((current) =>
+      current.includes(workspaceId)
+        ? current.filter((id) => id !== workspaceId)
+        : [...current, workspaceId],
+    );
+  }
+
+  function toggleProject(projectId: number) {
+    setCollapsedProjectIds((current) =>
+      current.includes(projectId)
+        ? current.filter((id) => id !== projectId)
+        : [...current, projectId],
+    );
+  }
+
+  const filteredWorkspaces = useMemo(() => {
+    const query = workspaceSearch.trim().toLowerCase();
+    if (!query) return workspaces;
+
+    return workspaces.filter((workspace) =>
+      workspace.name.toLowerCase().includes(query),
+    );
+  }, [workspaceSearch, workspaces]);
 
   useEffect(() => {
     async function loadWorkspaces() {
@@ -126,99 +160,212 @@ export default function AppShell({ children }: Props) {
   }, [activeProjectId, token]);
 
   return (
-    <div className="min-h-screen bg-[#F6F8FB] text-slate-950 md:grid md:grid-cols-[292px_1fr]">
-      <aside className="border-b border-slate-200 bg-[#FBFCFE] md:sticky md:top-0 md:h-screen md:border-b-0 md:border-r">
+    <div className="min-h-screen bg-[#F6F8FB] text-slate-950 md:grid md:grid-cols-[316px_1fr]">
+      <aside className="border-b border-slate-200 bg-[#F9FBFD] md:sticky md:top-0 md:h-screen md:border-b-0 md:border-r">
         <div className="flex h-full flex-col">
-          <div className="border-b border-slate-200 px-5 py-4">
+          <div className="border-b border-slate-200 bg-white px-5 py-4">
             <Link to="/" className="flex items-center gap-3 text-slate-950">
-              <div className="grid h-9 w-9 place-items-center rounded bg-[#339CFF] text-base font-bold text-white shadow-sm">
+              <div className="grid h-10 w-10 place-items-center rounded bg-[#339CFF] text-base font-bold text-white shadow-sm shadow-[#339CFF]/25">
                 R
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="font-bold leading-tight">Rationale</div>
-                <div className="max-w-[190px] truncate text-xs text-slate-500">
+                <div className="truncate text-xs text-slate-500">
                   {organization?.name || "Decision workspace"}
                 </div>
               </div>
             </Link>
           </div>
 
+          <div className="border-b border-slate-200 bg-white/70 p-3">
+            <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-bold text-slate-950">
+                    {organization?.name || "Organization"}
+                  </div>
+                  <div className="mt-1 text-xs text-slate-500">
+                    {workspaces.length} workspaces
+                  </div>
+                </div>
+                <Link
+                  to="/"
+                  className="rounded bg-[#EAF5FF] px-2.5 py-1 text-xs font-bold text-[#147AD6]"
+                >
+                  Open
+                </Link>
+              </div>
+            </div>
+            <input
+              value={workspaceSearch}
+              onChange={(e) => setWorkspaceSearch(e.target.value)}
+              placeholder="Search workspaces"
+              className="mt-3 h-9 rounded border-slate-200 bg-[#F6F8FB] px-3 py-2 text-sm shadow-none"
+            />
+          </div>
+
           <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `mb-4 block rounded px-3 py-2 text-sm font-semibold ${
+                `mb-4 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold ${
                   isActive
-                    ? "bg-[#EAF5FF] text-[#147AD6]"
+                    ? "bg-white text-[#147AD6] shadow-sm ring-1 ring-slate-200"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                 }`
               }
             >
-              All workspaces
+              <span className="grid h-6 w-6 place-items-center rounded bg-slate-100 text-[10px] text-slate-500">
+                W
+              </span>
+              <span>All workspaces</span>
             </NavLink>
 
-            <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wide text-slate-400">
-              Workspaces
+            <div className="flex items-center justify-between px-3 pb-2">
+              <div className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                Workspaces
+              </div>
+              <div className="text-[11px] font-semibold text-slate-400">
+                {filteredWorkspaces.length}
+              </div>
             </div>
 
-            <div className="space-y-1">
-              {workspaces.length === 0 && (
+            <div className="space-y-2">
+              {filteredWorkspaces.length === 0 && (
                 <div className="rounded bg-slate-50 px-3 py-2 text-xs text-slate-500">
-                  No workspaces yet
+                  {workspaces.length === 0
+                    ? "No workspaces yet"
+                    : "No matching workspaces"}
                 </div>
               )}
 
-              {workspaces.map((workspace) => {
+              {filteredWorkspaces.map((workspace) => {
                 const isWorkspaceActive = activeWorkspaceId === workspace.id;
+                const workspaceIsOpen =
+                  isWorkspaceActive && !isWorkspaceCollapsed(workspace.id);
 
                 return (
-                  <div key={workspace.id}>
+                  <div
+                    key={workspace.id}
+                    className={`rounded-xl ${
+                      isWorkspaceActive
+                        ? "bg-white p-1 shadow-sm ring-1 ring-slate-200"
+                        : ""
+                    }`}
+                  >
                     <NavLink
                       to={`/workspaces/${workspace.id}/projects`}
-                      className={`block rounded px-3 py-2 text-sm font-semibold ${
+                      onClick={(event) => {
+                        if (isWorkspaceActive) {
+                          event.preventDefault();
+                          toggleWorkspace(workspace.id);
+                        } else {
+                          setCollapsedWorkspaceIds((current) =>
+                            current.filter((id) => id !== workspace.id),
+                          );
+                        }
+                      }}
+                      className={`group relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold ${
                         isWorkspaceActive
-                          ? "bg-white text-[#147AD6] shadow-sm ring-1 ring-slate-200"
+                          ? "bg-[#F7FBFF] text-[#147AD6]"
                           : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
                       }`}
                     >
-                      <span className="block truncate">{workspace.name}</span>
+                      {isWorkspaceActive && (
+                        <span className="absolute bottom-2 left-0 top-2 w-1 rounded-r bg-[#339CFF]" />
+                      )}
+                      <span
+                        className={`ml-1 grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[10px] font-bold ${
+                          isWorkspaceActive
+                            ? "bg-[#339CFF] text-white"
+                            : "bg-white text-slate-500 ring-1 ring-slate-200"
+                        }`}
+                      >
+                        {workspace.name.slice(0, 1).toUpperCase()}
+                      </span>
+                      <span className="block min-w-0 flex-1 truncate">
+                        {workspace.name}
+                      </span>
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[10px] ${
+                          isWorkspaceActive
+                            ? "bg-white text-[#147AD6]"
+                            : "bg-slate-100 text-slate-400"
+                        }`}
+                      >
+                        {workspaceIsOpen ? "-" : "+"}
+                      </span>
                     </NavLink>
 
-                    {isWorkspaceActive && (
-                      <div className="ml-3 mt-1 border-l border-slate-200 pl-3">
-                        <div className="px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">
-                          Projects
+                    {workspaceIsOpen && (
+                      <div className="mt-2 rounded-lg bg-[#F6F8FB] p-2">
+                        <div className="mb-1 flex items-center justify-between px-2">
+                          <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                            Projects
+                          </span>
+                          <span className="text-[11px] font-semibold text-slate-400">
+                            {activeProjects.length}
+                          </span>
                         </div>
                         {activeProjects.length === 0 && (
-                          <div className="px-2 py-1 text-xs text-slate-500">
+                          <div className="rounded bg-slate-50 px-2 py-2 text-xs text-slate-500">
                             No projects
                           </div>
                         )}
                         {activeProjects.map((project) => {
                           const isProjectActive = activeProjectId === project.id;
+                          const projectIsOpen =
+                            isProjectActive && !isProjectCollapsed(project.id);
 
                           return (
                             <div key={project.id}>
                               <NavLink
                                 to={`/projects/${project.id}/decisions`}
-                                className={`block rounded px-2 py-1.5 text-sm ${
+                                onClick={(event) => {
+                                  if (isProjectActive) {
+                                    event.preventDefault();
+                                    toggleProject(project.id);
+                                  } else {
+                                    setCollapsedProjectIds((current) =>
+                                      current.filter((id) => id !== project.id),
+                                    );
+                                  }
+                                }}
+                                className={`group flex items-center gap-2 rounded-lg px-2 py-2 text-sm ${
                                   isProjectActive
-                                    ? "bg-white font-semibold text-slate-950 shadow-sm ring-1 ring-slate-200"
-                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                                    ? "bg-white font-semibold text-slate-950 shadow-sm"
+                                    : "text-slate-600 hover:bg-white hover:text-slate-950"
                                 }`}
                               >
-                                <span className="block truncate">
+                                <span
+                                  className={`grid h-5 w-5 shrink-0 place-items-center rounded text-[9px] font-bold ${
+                                    isProjectActive
+                                      ? "bg-[#EAF5FF] text-[#147AD6]"
+                                      : "bg-white text-slate-400 ring-1 ring-slate-200"
+                                  }`}
+                                >
+                                  P
+                                </span>
+                                <span className="block min-w-0 flex-1 truncate">
                                   {project.name}
+                                </span>
+                                <span className="text-[10px] text-slate-400">
+                                  {projectIsOpen ? "-" : "+"}
                                 </span>
                               </NavLink>
 
-                              {isProjectActive && (
-                                <div className="ml-3 mt-1 border-l border-slate-200 pl-3">
-                                  <div className="px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">
-                                    Decisions
+                              {projectIsOpen && (
+                                <div className="ml-2 mt-1 rounded-lg border border-slate-200 bg-white p-1.5">
+                                  <div className="mb-1 flex items-center justify-between px-2">
+                                    <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                                      Decisions
+                                    </span>
+                                    <span className="text-[11px] font-semibold text-slate-400">
+                                      {activeDecisions.length}
+                                    </span>
                                   </div>
                                   {activeDecisions.length === 0 && (
-                                    <div className="px-2 py-1 text-xs text-slate-500">
+                                    <div className="px-2 py-1.5 text-xs text-slate-500">
                                       No decisions
                                     </div>
                                   )}
@@ -227,7 +374,7 @@ export default function AppShell({ children }: Props) {
                                       key={decision.id}
                                       to={`/decisions/${decision.id}`}
                                       className={({ isActive }) =>
-                                        `block rounded px-2 py-1.5 text-xs ${
+                                        `flex items-center gap-2 rounded-md px-2 py-1.5 text-xs ${
                                           isActive ||
                                           routeIds.decisionId === decision.id
                                             ? "bg-[#EAF5FF] font-semibold text-[#147AD6]"
@@ -235,7 +382,8 @@ export default function AppShell({ children }: Props) {
                                         }`
                                       }
                                     >
-                                      <span className="block truncate">
+                                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-60" />
+                                      <span className="block min-w-0 flex-1 truncate">
                                         {decision.title}
                                       </span>
                                     </NavLink>
@@ -253,17 +401,24 @@ export default function AppShell({ children }: Props) {
             </div>
           </nav>
 
-          <div className="hidden border-t border-slate-200 bg-white/60 p-4 md:block">
-            <div className="mb-3 truncate text-sm font-semibold text-slate-800">
-              {user?.name || user?.email || "User"}
+          <div className="hidden border-t border-slate-200 bg-white/80 p-4 md:block">
+            <div className="flex items-center gap-3">
+              <div className="grid h-9 w-9 place-items-center rounded bg-slate-100 text-xs font-bold text-slate-600">
+                {(user?.name || user?.email || "U").slice(0, 1).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold text-slate-800">
+                  {user?.name || user?.email || "User"}
+                </div>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-950"
+                >
+                  Log out
+                </button>
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={logout}
-              className="text-sm font-semibold text-slate-500 hover:text-slate-950"
-            >
-              Log out
-            </button>
           </div>
         </div>
       </aside>

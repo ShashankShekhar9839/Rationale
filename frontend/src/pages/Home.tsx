@@ -7,7 +7,7 @@ import * as workspaceService from "../services/workspaces";
 
 export default function Home() {
   const { token, user } = useAuth();
-  const [activePanel, setActivePanel] = useState<"create" | "workspaces">(
+  const [activePanel, setActivePanel] = useState<"create" | "workspaces" | "insights">(
     "workspaces",
   );
   const [organizations, setOrganizations] = useState<orgService.Organization[]>([]);
@@ -21,6 +21,29 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const systemDesignArticles = [
+    {
+      title: "Building reliable event-driven workflows",
+      source: "AI-curated engineering brief",
+      tag: "Distributed systems",
+      summary:
+        "Patterns for retries, idempotency, queues, and observable workflow execution.",
+    },
+    {
+      title: "Designing rate limiters for multi-tenant APIs",
+      source: "AI-curated engineering brief",
+      tag: "API design",
+      summary:
+        "Token buckets, sliding windows, tenant isolation, and practical failure modes.",
+    },
+    {
+      title: "Scaling real-time collaboration documents",
+      source: "AI-curated engineering brief",
+      tag: "Collaboration",
+      summary:
+        "Tradeoffs between CRDTs, operational transforms, persistence, and presence.",
+    },
+  ];
 
   const selectedOrganization = useMemo(() => {
     if (currentOrganization) return currentOrganization;
@@ -135,14 +158,73 @@ export default function Home() {
             <span className="rounded bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
               {selectedOrganization?.name || "No organization selected"}
             </span>
-            <Button type="button" onClick={() => setActivePanel("create")}>
-              New Workspace
-            </Button>
+            <button
+              type="button"
+              className="rounded border border-rose-500 bg-rose-500 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:border-rose-600 hover:bg-rose-600"
+              onClick={() => setActivePanel("insights")}
+            >
+              Explore latest system design
+            </button>
           </div>
         </div>
       </section>
 
       {error && <div className="error-text">{error}</div>}
+
+      {activePanel === "insights" && (
+        <section className="panel overflow-hidden">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">AI discovery</p>
+              <h2 className="mt-1 text-xl font-bold text-slate-950">
+                Latest system design intelligence
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                This feed is designed for a daily AI job that curates recent
+                system design articles from the last week.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="rounded border border-slate-300 bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
+              onClick={() => setActivePanel("workspaces")}
+            >
+              Back to workspaces
+            </button>
+          </div>
+
+          <div className="grid gap-4 p-5 md:grid-cols-3">
+            {systemDesignArticles.map((article) => (
+              <article
+                key={article.title}
+                className="rounded-lg border border-slate-200 bg-[#FBFCFE] p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#339CFF] hover:bg-white hover:shadow-md"
+              >
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <span className="soft-badge">{article.tag}</span>
+                  <span className="text-xs font-semibold text-slate-400">
+                    Last 7 days
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold leading-6 text-slate-950">
+                  {article.title}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  {article.summary}
+                </p>
+                <div className="mt-5 border-t border-slate-200 pt-4 text-xs font-semibold text-slate-500">
+                  {article.source}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="border-t border-slate-200 bg-[#F7FBFF] px-5 py-4 text-sm leading-6 text-slate-600">
+            Later, the backend can run a daily job that searches recent
+            engineering content, summarizes it with AI, stores article cards,
+            and refreshes this feed automatically.
+          </div>
+        </section>
+      )}
 
       {activePanel === "create" && (
         <section className="panel p-6">
