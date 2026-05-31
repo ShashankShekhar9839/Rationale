@@ -45,7 +45,7 @@
   }
 
   .button {
-    @apply bg-[#339CFF] text-white border border-[#2188E8] px-3.5 py-2 rounded font-semibold shadow-sm cursor-pointer hover:bg-[#147AD6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#339CFF] disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex h-9 items-center justify-center rounded border border-[#2188E8] bg-[#339CFF] px-3 text-sm font-semibold leading-none text-white shadow-sm cursor-pointer hover:bg-[#147AD6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#339CFF] disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .page-shell {
@@ -93,11 +93,19 @@
   }
 
   .soft-badge {
-    @apply rounded bg-[#EAF5FF] px-2.5 py-1 text-xs font-bold text-[#147AD6];
+    @apply inline-flex h-6 items-center rounded bg-[#EAF5FF] px-2.5 text-xs font-bold leading-none text-[#147AD6];
   }
 
   .secondary-button {
-    @apply rounded border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-[#339CFF] hover:text-[#147AD6] disabled:opacity-50;
+    @apply inline-flex h-9 items-center justify-center rounded border border-slate-300 bg-white px-3 text-sm font-semibold leading-none text-slate-700 shadow-sm hover:border-[#339CFF] hover:text-[#147AD6] disabled:opacity-50;
+  }
+
+  .action-button {
+    @apply inline-flex h-6 items-center justify-center rounded border border-slate-300 bg-white px-2.5 text-xs font-bold leading-none text-slate-700 shadow-sm hover:border-[#339CFF] hover:bg-[#F7FBFF] hover:text-[#147AD6] disabled:opacity-50;
+  }
+
+  .action-button-primary {
+    @apply inline-flex h-6 items-center justify-center rounded border border-[#2188E8] bg-[#339CFF] px-2.5 text-xs font-bold leading-none text-white shadow-sm hover:bg-[#147AD6] disabled:opacity-50;
   }
 
   .footer {

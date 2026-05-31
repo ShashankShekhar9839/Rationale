@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import Button from "../components/Button";
 import DocumentEditor from "../components/DocumentEditor";
@@ -17,7 +17,7 @@ export default function DecisionDocument() {
   const [history, setHistory] = useState<decisionService.DecisionVersionHistory[]>(
     [],
   );
-  const [mode, setMode] = useState<"read" | "patch" | "new">("read");
+  const [mode, setMode] = useState<"read" | "edit">("read");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [label, setLabel] = useState("");
   const [content, setContent] = useState("");
@@ -63,19 +63,12 @@ export default function DecisionDocument() {
   if (!token) return <Navigate to="/login" replace />;
   if (!numericDecisionId) return <Navigate to="/" replace />;
 
-  function startPatch() {
+  function startEdit() {
     if (!latestVersion) return;
     setLabel(latestVersion.label);
     setContent(latestVersion.content);
     setSelectedVersion(latestVersion);
-    setMode("patch");
-  }
-
-  function startNewVersion() {
-    setLabel("");
-    setContent(latestVersion?.content || "");
-    setSelectedVersion(latestVersion);
-    setMode("new");
+    setMode("edit");
   }
 
   async function reloadDecision() {
@@ -89,8 +82,8 @@ export default function DecisionDocument() {
     setHistory(versionHistory);
   }
 
-  async function handlePatch(e: FormEvent) {
-    e.preventDefault();
+  async function handlePatch(event?: { preventDefault: () => void }) {
+    event?.preventDefault();
     if (!token || !latestVersion) return;
 
     setError("");
@@ -111,8 +104,8 @@ export default function DecisionDocument() {
     }
   }
 
-  async function handleNewVersion(e: FormEvent) {
-    e.preventDefault();
+  async function handleNewVersion(event?: { preventDefault: () => void }) {
+    event?.preventDefault();
     if (!token) return;
 
     setError("");
@@ -121,7 +114,7 @@ export default function DecisionDocument() {
     try {
       await decisionService.createDecisionVersion(
         numericDecisionId,
-        { label: label.trim() || "Major update", content },
+        { label: label.trim() || latestVersion?.label || "Major update", content },
         token,
       );
       await reloadDecision();
@@ -176,21 +169,10 @@ export default function DecisionDocument() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button type="button" onClick={startPatch} disabled={!latestVersion}>
-              Patch Latest
-            </Button>
-            <button
-              type="button"
-              onClick={startNewVersion}
-              className="secondary-button"
-              disabled={!latestVersion}
-            >
-              New Version
-            </button>
             <button
               type="button"
               onClick={() => setHistoryOpen(true)}
-              className="secondary-button"
+              className="action-button"
             >
               History
             </button>
@@ -207,9 +189,7 @@ export default function DecisionDocument() {
               ? isViewingLatest
                 ? "Latest decision"
                 : "Historical decision"
-              : mode === "patch"
-                ? "Patch latest"
-                : "New major version"}
+              : "Editing latest version"}
           </p>
           <h1 className="mt-3 text-3xl font-bold tracking-normal text-slate-950 md:text-4xl">
             {decision?.title || "Decision"}
@@ -229,9 +209,13 @@ export default function DecisionDocument() {
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">
               Create a new version to start this decision document.
             </p>
-            <Button type="button" className="mt-5" onClick={startNewVersion}>
-              Create New Version
-            </Button>
+            <button
+              type="button"
+              className="action-button mt-5"
+              onClick={() => setHistoryOpen(true)}
+            >
+              Open History
+            </button>
           </div>
         )}
 
@@ -246,9 +230,20 @@ export default function DecisionDocument() {
                   {activeVersion.label || "Untitled version"}
                 </h2>
               </div>
-              <span className="w-fit rounded bg-[#EAF5FF] px-3 py-1 text-xs font-bold text-[#147AD6]">
-                {isViewingLatest ? "Editable latest" : "Read-only"}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="w-fit rounded bg-[#EAF5FF] px-3 py-1 text-xs font-bold text-[#147AD6]">
+                  {isViewingLatest ? "Latest version" : "Read-only history"}
+                </span>
+                {isViewingLatest && (
+                  <button
+                    type="button"
+                    onClick={startEdit}
+                    className="action-button-primary"
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
             </div>
             <div className="mx-auto max-w-3xl">
               <DocumentRenderer content={activeVersion.content} />
@@ -256,9 +251,9 @@ export default function DecisionDocument() {
           </article>
         )}
 
-        {(mode === "patch" || mode === "new") && (
+        {mode === "edit" && (
           <form
-            onSubmit={mode === "patch" ? handlePatch : handleNewVersion}
+            onSubmit={(event) => event.preventDefault()}
             className="p-6"
           >
             <div className="mb-5 grid gap-4 md:grid-cols-[280px_1fr]">
@@ -273,9 +268,9 @@ export default function DecisionDocument() {
                 />
               </div>
               <div className="rounded bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                {mode === "patch"
-                  ? "Patch is for small corrections to the latest version."
-                  : "New version is for meaningful changes. The current version remains in history."}
+                You are editing the latest version. Save small corrections into
+                the current version, or preserve this as a major change by
+                saving it as a new version.
               </div>
             </div>
 
@@ -285,17 +280,26 @@ export default function DecisionDocument() {
               <button
                 type="button"
                 onClick={() => setMode("read")}
-                className="secondary-button"
+                className="action-button"
               >
                 Cancel
               </button>
-              <Button type="submit" disabled={saving}>
-                {saving
-                  ? "Saving..."
-                  : mode === "patch"
-                    ? "Save Patch"
-                    : "Create Version"}
-              </Button>
+              <button
+                type="button"
+                className="action-button"
+                disabled={saving}
+                onClick={handlePatch}
+              >
+                {saving ? "Saving..." : "Edit Current Version"}
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={handleNewVersion}
+                className="action-button-primary"
+              >
+                {saving ? "Saving..." : "Save as New Version"}
+              </button>
             </div>
           </form>
         )}
