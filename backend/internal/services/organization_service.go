@@ -30,12 +30,12 @@ func CreateOrganization(
 	), nil
 }
 
-func GetOrganizations() (
+func GetOrganizationsByOwnerID(ownerID uint) (
 	[]dto.OrganizationResponse,
 	error,
 ) {
 
-	organizations, err := repositories.GetOrganizations()
+	organizations, err := repositories.GetOrganizationsByOwnerID(ownerID)
 
 	if err != nil {
 		return nil, err
@@ -48,9 +48,10 @@ func GetOrganizations() (
 
 func GetOrganizationByID(
 	id string,
+	ownerID uint,
 ) (dto.OrganizationResponse, error) {
 
-	organization, err := repositories.GetOrganizationByID(id)
+	organization, err := repositories.GetOrganizationByID(id, ownerID)
 
 	if err != nil {
 		return dto.OrganizationResponse{}, err

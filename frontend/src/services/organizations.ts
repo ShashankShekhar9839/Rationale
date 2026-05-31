@@ -12,12 +12,21 @@ export type Organization = {
   ownerId: number;
 };
 
+type OrganizationApiResponse = Organization & {
+  ID?: number;
+  Name?: string;
+  Description?: string;
+  OwnerID?: number;
+};
+
 type ApiResponse<T> = {
   success: boolean;
   message?: string;
   data: T;
   error?: string;
 };
+
+const CURRENT_ORGANIZATION_KEY = "rationale_current_organization";
 
 async function handleResponse<T>(res: Response): Promise<T> {
   const data = await res.json().catch(() => ({}));
@@ -52,7 +61,7 @@ export async function createOrganization(
     body: JSON.stringify(payload),
   });
 
-  return handleApiResponse<Organization>(res);
+  return normalizeOrganization(await handleApiResponse<OrganizationApiResponse>(res));
 }
 
 export async function getOrganizations(token: string): Promise<Organization[]> {
@@ -62,5 +71,38 @@ export async function getOrganizations(token: string): Promise<Organization[]> {
     },
   });
 
-  return handleApiResponse<Organization[]>(res);
+  const organizations =
+    await handleApiResponse<OrganizationApiResponse[] | null>(res);
+
+  return Array.isArray(organizations)
+    ? organizations.map(normalizeOrganization)
+    : [];
+}
+
+function normalizeOrganization(org: OrganizationApiResponse): Organization {
+  return {
+    id: org.id ?? org.ID ?? 0,
+    name: org.name ?? org.Name ?? "",
+    description: org.description ?? org.Description,
+    ownerId: org.ownerId ?? org.OwnerID ?? 0,
+  };
+}
+
+export function saveCurrentOrganization(organization: Organization) {
+  localStorage.setItem(
+    CURRENT_ORGANIZATION_KEY,
+    JSON.stringify(organization),
+  );
+}
+
+export function getCurrentOrganization(): Organization | null {
+  const raw = localStorage.getItem(CURRENT_ORGANIZATION_KEY);
+  if (!raw) return null;
+
+  try {
+    return normalizeOrganization(JSON.parse(raw));
+  } catch {
+    localStorage.removeItem(CURRENT_ORGANIZATION_KEY);
+    return null;
+  }
 }

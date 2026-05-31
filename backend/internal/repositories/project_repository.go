@@ -18,13 +18,18 @@ type ProjectRepository interface {
 	) (bool, error)
 
 	GetProjects(
-	userID uint,
-) ([]models.Project, error)
+		userID uint,
+	) ([]models.Project, error)
 
-GetProjectByID(
-	projectID uint,
-	userID uint,
-) (*models.Project, error)
+	GetProjectsByWorkspaceID(
+		workspaceID uint,
+		userID uint,
+	) ([]models.Project, error)
+
+	GetProjectByID(
+		projectID uint,
+		userID uint,
+	) (*models.Project, error)
 }
 
 func NewProjectRepository(
@@ -84,6 +89,35 @@ func (r *projectRepository) GetProjects(
 		).
 		Where(
 			"organizations.owner_id = ?",
+			userID,
+		).
+		Find(&projects).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return projects, nil
+}
+
+func (r *projectRepository) GetProjectsByWorkspaceID(
+	workspaceID uint,
+	userID uint,
+) ([]models.Project, error) {
+
+	var projects []models.Project
+
+	err := r.db.
+		Model(&models.Project{}).
+		Joins(
+			"JOIN workspaces ON workspaces.id = projects.workspace_id",
+		).
+		Joins(
+			"JOIN organizations ON organizations.id = workspaces.organization_id",
+		).
+		Where(
+			"projects.workspace_id = ? AND organizations.owner_id = ?",
+			workspaceID,
 			userID,
 		).
 		Find(&projects).Error

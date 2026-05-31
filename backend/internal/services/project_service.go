@@ -27,13 +27,18 @@ type ProjectService interface {
 	) (*models.Project, error)
 
 	GetProjects(
-	userID uint,
-) ([]models.Project, error)
+		userID uint,
+	) ([]models.Project, error)
 
-GetProjectByID(
-	projectID uint,
-	userID uint,
-) (*models.Project, error)
+	GetProjectsByWorkspaceID(
+		workspaceID uint,
+		userID uint,
+	) ([]models.Project, error)
+
+	GetProjectByID(
+		projectID uint,
+		userID uint,
+	) (*models.Project, error)
 }
 
 func (s *projectService) CreateProject(
@@ -73,6 +78,17 @@ func (s *projectService) GetProjects(
 ) ([]models.Project, error) {
 
 	return s.projectRepo.GetProjects(
+		userID,
+	)
+}
+
+func (s *projectService) GetProjectsByWorkspaceID(
+	workspaceID uint,
+	userID uint,
+) ([]models.Project, error) {
+
+	return s.projectRepo.GetProjectsByWorkspaceID(
+		workspaceID,
 		userID,
 	)
 }

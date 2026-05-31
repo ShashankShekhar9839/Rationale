@@ -12,12 +12,12 @@ type CreateOrganizationRequest struct {
 }
 
 type OrganizationResponse struct {
-	ID          uint
-	Name        string
-	Description string
-	OwnerID     uint
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          uint      `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	OwnerID     uint      `json:"ownerId"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 func ToOrganizationResponse(
@@ -38,7 +38,7 @@ func ToOrganizationResponseList(
 	organizations []models.Organization,
 ) []OrganizationResponse {
 
-	var response []OrganizationResponse
+	response := make([]OrganizationResponse, 0, len(organizations))
 
 	for _, organization := range organizations {
 

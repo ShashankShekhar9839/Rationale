@@ -23,7 +23,6 @@ func NewWorkspaceHandler(
 
 func (h *WorkspaceHandler) CreateWorkspace(c *gin.Context) {
 	var req dto.CreateWorkspaceRequest
-	
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -66,7 +65,7 @@ func (h *WorkspaceHandler) GetWorkspaces(c *gin.Context) {
 		return
 	}
 
-	var response []dto.WorkspaceResponse
+	response := make([]dto.WorkspaceResponse, 0, len(workspaces))
 
 	for _, workspace := range workspaces {
 

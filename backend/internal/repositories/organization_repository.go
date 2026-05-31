@@ -14,22 +14,23 @@ func CreateOrganization(
 	return result.Error
 }
 
-func GetOrganizations() ([]models.Organization, error) {
+func GetOrganizationsByOwnerID(ownerID uint) ([]models.Organization, error) {
 
 	var organizations []models.Organization
 
-	result := db.DB.Find(&organizations)
+	result := db.DB.Where("owner_id = ?", ownerID).Find(&organizations)
 
 	return organizations, result.Error
 }
 
 func GetOrganizationByID(
 	id string,
+	ownerID uint,
 ) (models.Organization, error) {
 
 	var organization models.Organization
 
-	result := db.DB.First(&organization, id)
+	result := db.DB.Where("owner_id = ?", ownerID).First(&organization, id)
 
 	return organization, result.Error
 }

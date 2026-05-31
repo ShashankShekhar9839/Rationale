@@ -65,13 +65,14 @@ export default function CreateOrganization() {
     }
 
     try {
-      await orgService.createOrganization(
+      const organization = await orgService.createOrganization(
         {
           name,
           description,
         },
         token,
       );
+      orgService.saveCurrentOrganization(organization);
       // After creating org, redirect to dashboard
       navigate("/");
     } catch (err) {

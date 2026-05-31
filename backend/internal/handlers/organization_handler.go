@@ -36,7 +36,15 @@ func CreateOrganization(c *gin.Context) {
 }
 
 func GetOrganizations(c *gin.Context) {
-	orgs, err := services.GetOrganizations()
+	userIDValue, exists := c.Get("userID")
+	if !exists {
+		utils.ErrorResponse(c, http.StatusUnauthorized, "User not authenticated")
+		return
+	}
+
+	userID := userIDValue.(uint)
+
+	orgs, err := services.GetOrganizationsByOwnerID(userID)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -48,7 +56,15 @@ func GetOrganizations(c *gin.Context) {
 func GetOrganizationByID(c *gin.Context) {
 	id := c.Param("id")
 
-	org, err := services.GetOrganizationByID(id)
+	userIDValue, exists := c.Get("userID")
+	if !exists {
+		utils.ErrorResponse(c, http.StatusUnauthorized, "User not authenticated")
+		return
+	}
+
+	userID := userIDValue.(uint)
+
+	org, err := services.GetOrganizationByID(id, userID)
 	if err != nil {
 		utils.ErrorResponse(c, http.StatusNotFound, "Organization not found")
 		return

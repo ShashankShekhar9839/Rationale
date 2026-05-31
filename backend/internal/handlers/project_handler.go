@@ -64,9 +64,31 @@ func (h *ProjectHandler) GetProjects(
 
 	userID := c.MustGet("userID").(uint)
 
-	projects, err := h.projectService.GetProjects(
-		userID,
-	)
+	var projects []dto.ProjectResponse
+
+	workspaceIDParam := c.Query("workspace_id")
+
+	projectModels, err := h.projectService.GetProjects(userID)
+
+	if workspaceIDParam != "" {
+		workspaceID, parseErr := strconv.ParseUint(
+			workspaceIDParam,
+			10,
+			64,
+		)
+
+		if parseErr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid workspace id",
+			})
+			return
+		}
+
+		projectModels, err = h.projectService.GetProjectsByWorkspaceID(
+			uint(workspaceID),
+			userID,
+		)
+	}
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -75,10 +97,9 @@ func (h *ProjectHandler) GetProjects(
 		return
 	}
 
-	var response []dto.ProjectResponse
-
-	for _, project := range projects {
-		response = append(response, dto.ProjectResponse{
+	projects = make([]dto.ProjectResponse, 0, len(projectModels))
+	for _, project := range projectModels {
+		projects = append(projects, dto.ProjectResponse{
 			ID:          project.ID,
 			Name:        project.Name,
 			Description: project.Description,
@@ -86,7 +107,7 @@ func (h *ProjectHandler) GetProjects(
 		})
 	}
 
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, projects)
 }
 
 func (h *ProjectHandler) GetProjectByID(
