@@ -10,7 +10,7 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-950;
+    @apply bg-[#F6F8FB] text-slate-950;
     font-family:
       Inter,
       ui-sans-serif,
@@ -37,7 +37,7 @@
   }
 
   .container {
-    @apply max-w-4xl mx-auto px-4 my-6;
+    @apply max-w-7xl mx-auto px-4 my-6;
   }
 
   .card {
@@ -45,7 +45,59 @@
   }
 
   .button {
-    @apply bg-[#339CFF] text-white border border-[#2188E8] px-4 py-2 rounded font-semibold shadow-sm cursor-pointer hover:bg-[#147AD6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#339CFF] disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-[#339CFF] text-white border border-[#2188E8] px-3.5 py-2 rounded font-semibold shadow-sm cursor-pointer hover:bg-[#147AD6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#339CFF] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .page-shell {
+    @apply space-y-5;
+  }
+
+  .page-header {
+    @apply rounded-lg border border-slate-200 bg-white px-6 py-5 shadow-sm;
+  }
+
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-wide text-[#147AD6];
+  }
+
+  .page-title {
+    @apply mt-1 text-2xl font-bold text-slate-950 md:text-3xl;
+  }
+
+  .page-copy {
+    @apply mt-2 max-w-2xl text-sm leading-6 text-slate-600;
+  }
+
+  .panel {
+    @apply rounded-lg border border-slate-200 bg-white shadow-sm;
+  }
+
+  .panel-header {
+    @apply flex flex-col gap-3 border-b border-slate-200 px-5 py-4 md:flex-row md:items-center md:justify-between;
+  }
+
+  .entity-list {
+    @apply divide-y divide-slate-100;
+  }
+
+  .entity-row {
+    @apply block px-5 py-4 transition hover:bg-[#F7FBFF];
+  }
+
+  .entity-title {
+    @apply font-semibold text-slate-950;
+  }
+
+  .entity-copy {
+    @apply mt-1 text-sm leading-6 text-slate-600;
+  }
+
+  .soft-badge {
+    @apply rounded bg-[#EAF5FF] px-2.5 py-1 text-xs font-bold text-[#147AD6];
+  }
+
+  .secondary-button {
+    @apply rounded border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-[#339CFF] hover:text-[#147AD6] disabled:opacity-50;
   }
 
   .footer {

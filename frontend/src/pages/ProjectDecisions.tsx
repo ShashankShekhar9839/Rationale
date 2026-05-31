@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import Button from "../components/Button";
+import DocumentEditor from "../components/DocumentEditor";
 import { useAuth } from "../context/AuthContext";
 import * as decisionService from "../services/decisions";
 import * as projectService from "../services/projects";
@@ -100,72 +101,38 @@ export default function ProjectDecisions() {
   }
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
+    <div className="page-shell">
+      <section className="page-header">
         <Link
           to={project ? `/workspaces/${project.workspace_id}/projects` : "/"}
           className="text-sm font-semibold"
         >
           Back to projects
         </Link>
-        <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-[#147AD6]">
-              Project decisions
-            </p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-950">
+            <p className="eyebrow">Project decisions</p>
+            <h1 className="page-title">
               {project?.name || "Project"}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+            <p className="page-copy">
               Capture decision documents, patch the latest version, or create a
               new version when the reasoning changes materially.
             </p>
           </div>
-          <div className="rounded-lg bg-[#EAF5FF] px-5 py-4 text-[#147AD6]">
-            <div className="text-3xl font-bold">{decisions.length}</div>
-            <div className="text-xs font-semibold">Decisions</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="soft-badge">{decisions.length} decisions</span>
+            <Button type="button" onClick={() => setActivePanel("create")}>
+              New Decision
+            </Button>
           </div>
         </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => setActivePanel("decisions")}
-          className={`rounded-lg border bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#339CFF] hover:shadow-lg ${
-            activePanel === "decisions" ? "border-[#339CFF]" : "border-slate-200"
-          }`}
-        >
-          <div className="mb-5 grid h-12 w-12 place-items-center rounded bg-slate-950 text-sm font-bold text-white">
-            DOC
-          </div>
-          <h2 className="text-xl font-bold text-slate-950">Show decisions</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Open decision documents and review their current state.
-          </p>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActivePanel("create")}
-          className={`rounded-lg border bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#339CFF] hover:shadow-lg ${
-            activePanel === "create" ? "border-[#339CFF]" : "border-slate-200"
-          }`}
-        >
-          <div className="mb-5 grid h-12 w-12 place-items-center rounded bg-[#339CFF] text-xl font-bold text-white">
-            +
-          </div>
-          <h2 className="text-xl font-bold text-slate-950">Create decision</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            Draft a new decision document with its first version.
-          </p>
-        </button>
       </section>
 
       {error && <div className="error-text">{error}</div>}
 
       {activePanel === "create" && (
-        <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="panel p-6">
           <div className="mb-6">
             <p className="text-sm font-semibold text-[#147AD6]">New decision</p>
             <h2 className="mt-1 text-2xl font-bold text-slate-950">
@@ -204,37 +171,40 @@ export default function ProjectDecisions() {
             </div>
             <div className="form-group">
               <label htmlFor="decision-content">Document content</label>
-              <textarea
-                id="decision-content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Context, options considered, decision, consequences..."
-                className="min-h-[240px] font-mono text-sm leading-6"
-              />
+              <DocumentEditor value={content} onChange={setContent} />
             </div>
-            <Button type="submit" disabled={saving || !title.trim()}>
-              {saving ? "Creating..." : "Create Decision"}
-            </Button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setActivePanel("decisions")}
+              >
+                Cancel
+              </button>
+              <Button type="submit" disabled={saving || !title.trim()}>
+                {saving ? "Creating..." : "Create Decision"}
+              </Button>
+            </div>
           </form>
         </section>
       )}
 
       {activePanel === "decisions" && (
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-slate-200 p-6 md:flex-row md:items-center md:justify-between">
+        <section className="panel">
+          <div className="panel-header">
             <div>
-              <p className="text-sm font-semibold text-[#147AD6]">Documents</p>
-              <h2 className="mt-1 text-2xl font-bold text-slate-950">
+              <p className="eyebrow">Documents</p>
+              <h2 className="mt-1 text-xl font-bold text-slate-950">
                 All decisions
               </h2>
             </div>
             <Button type="button" onClick={() => setActivePanel("create")}>
-              + New Decision
+              New Decision
             </Button>
           </div>
-          <div className="p-4">
+          <div>
             {loading && (
-              <div className="rounded border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
+              <div className="m-4 rounded border border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
                 Loading decisions...
               </div>
             )}
@@ -256,23 +226,23 @@ export default function ProjectDecisions() {
               </div>
             )}
             {!loading && decisions.length > 0 && (
-              <div className="grid gap-3">
+              <div className="entity-list">
                 {decisions.map((decision) => (
                   <Link
                     key={decision.id}
                     to={`/decisions/${decision.id}`}
-                    className="rounded-lg border border-slate-200 p-5 transition hover:border-[#339CFF] hover:shadow-md"
+                    className="entity-row"
                   >
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                       <div>
-                        <h3 className="text-lg font-bold text-slate-950">
+                        <h3 className="entity-title">
                           {decision.title}
                         </h3>
-                        <p className="mt-1 text-sm leading-6 text-slate-600">
+                        <p className="entity-copy">
                           {decision.description || "No summary added yet."}
                         </p>
                       </div>
-                      <span className="rounded bg-[#EAF5FF] px-3 py-1 text-xs font-bold text-[#147AD6]">
+                      <span className="soft-badge">
                         Decision
                       </span>
                     </div>
