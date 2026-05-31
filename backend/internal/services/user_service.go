@@ -35,12 +35,12 @@ func GetUserByID(id string) (models.User, error) {
 	return repositories.GetUserByID(id)
 }
 
-func LoginUser(email, password string) (string, error) {
+func LoginUser(email, password string) (string, models.User, error) {
 
 	user, err := repositories.GetUserByEmail(email)
 
 	if err != nil {
-		return "", errors.New("invalid credentials")
+		return "", models.User{}, errors.New("invalid credentials")
 	}
 
 	isValidPassword := utils.CheckPasswordHash(
@@ -49,16 +49,16 @@ func LoginUser(email, password string) (string, error) {
 	)
 
 	if !isValidPassword {
-		return "", errors.New("invalid credentials")
+		return "", models.User{}, errors.New("invalid credentials")
 	}
 
 	token, err := utils.GenerateJWT(user.ID)
 
 	if err != nil {
-		return "", err
+		return "", models.User{}, err
 	}
 
-	return token, nil
+	return token, user, nil
 }
 
 func GetCurrentUser(userID uint) (models.User, error) {

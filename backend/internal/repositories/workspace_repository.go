@@ -7,17 +7,17 @@ import (
 
 type WorkspaceRepository interface {
 	CreateWorkspace(workspace *models.Workspace) error
-	
-	CheckOrganizationOwnership(
-	userID uint,
-	organizationID uint,
-) (bool, error)
 
-GetWorkspacesByUserID(userID uint) ([]models.Workspace, error)
-GetWorkspaceByID(
-	workspaceID uint,
-	userID uint,
-) (*models.Workspace, error)
+	CheckOrganizationOwnership(
+		userID uint,
+		organizationID uint,
+	) (bool, error)
+
+	GetWorkspacesByUserID(userID uint) ([]models.Workspace, error)
+	GetWorkspaceByID(
+		workspaceID uint,
+		userID uint,
+	) (*models.Workspace, error)
 }
 
 type workspaceRepository struct {
@@ -49,7 +49,14 @@ func NewWorkspaceRepository(db *gorm.DB) WorkspaceRepository {
 }
 
 func (r *workspaceRepository) CreateWorkspace(workspace *models.Workspace) error {
-	return r.db.Create(workspace).Error
+	if err := r.db.Create(workspace).Error; err != nil {
+		return err
+	}
+
+	return r.db.
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
+		First(workspace, workspace.ID).Error
 }
 
 func (r *workspaceRepository) GetWorkspacesByUserID(
@@ -59,8 +66,11 @@ func (r *workspaceRepository) GetWorkspacesByUserID(
 	var workspaces []models.Workspace
 
 	err := r.db.
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
 		Joins("JOIN organizations ON organizations.id = workspaces.organization_id").
 		Where("organizations.owner_id = ?", userID).
+		Order("workspaces.created_at DESC").
 		Find(&workspaces).Error
 
 	if err != nil {
@@ -78,6 +88,8 @@ func (r *workspaceRepository) GetWorkspaceByID(
 	var workspace models.Workspace
 
 	err := r.db.
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
 		Joins("JOIN organizations ON organizations.id = workspaces.organization_id").
 		Where(
 			"workspaces.id = ? AND organizations.owner_id = ?",

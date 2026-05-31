@@ -65,15 +65,7 @@ func (h *DecisionVersionHandler) CreateVersion(
 		return
 	}
 
-	response := dto.DecisionVersionResponse{
-		ID:            version.ID,
-		VersionNumber: version.VersionNumber,
-		Label:         version.Label,
-		Content:       version.Content,
-		DecisionID:    version.DecisionID,
-	}
-
-	c.JSON(http.StatusCreated, response)
+	c.JSON(http.StatusCreated, dto.ToDecisionVersionResponse(*version))
 }
 
 func (h *DecisionVersionHandler) GetVersionsByDecisionID(
@@ -109,25 +101,7 @@ func (h *DecisionVersionHandler) GetVersionsByDecisionID(
 		return
 	}
 
-	response := make(
-		[]dto.DecisionVersionHistoryResponse,
-		0,
-		len(versions),
-	)
-
-	for _, version := range versions {
-		response = append(
-			response,
-			dto.DecisionVersionHistoryResponse{
-				ID:            version.ID,
-				VersionNumber: version.VersionNumber,
-				Label:         version.Label,
-				CreatedAt:     version.CreatedAt,
-			},
-		)
-	}
-
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, dto.ToDecisionVersionHistoryResponseList(versions))
 }
 
 func (h *DecisionVersionHandler) GetVersionByID(
@@ -163,15 +137,7 @@ func (h *DecisionVersionHandler) GetVersionByID(
 		return
 	}
 
-	response := dto.DecisionVersionResponse{
-		ID:            version.ID,
-		VersionNumber: version.VersionNumber,
-		Label:         version.Label,
-		Content:       version.Content,
-		DecisionID:    version.DecisionID,
-	}
-
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, dto.ToDecisionVersionResponse(*version))
 }
 
 func (h *DecisionVersionHandler) UpdateVersion(

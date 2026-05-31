@@ -110,7 +110,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := services.LoginUser(
+	token, loggedInUser, err := services.LoginUser(
 		request.Email,
 		request.Password,
 	)
@@ -130,13 +130,14 @@ func LoginUser(c *gin.Context) {
 		"Login successful",
 		gin.H{
 			"token": token,
+			"user":  dto.ToUserResponse(loggedInUser),
 		},
 	)
 }
 
 func GetCurrentUser(c *gin.Context) {
 
-	userIDValue, exists := c.Get("user_id")
+	userIDValue, exists := c.Get("userID")
 
 	if !exists {
 		utils.ErrorResponse(
@@ -147,7 +148,7 @@ func GetCurrentUser(c *gin.Context) {
 		return
 	}
 
-	userID := uint(userIDValue.(float64))
+	userID := userIDValue.(uint)
 
 	user, err := services.GetCurrentUser(userID)
 

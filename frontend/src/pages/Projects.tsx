@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import { useAuth } from "../context/AuthContext";
 import * as projectService from "../services/projects";
 import * as workspaceService from "../services/workspaces";
+import { formatCreatedBy, formatUpdatedBy } from "../utils/audit";
 
 export default function Projects() {
   const { token } = useAuth();
@@ -121,6 +122,11 @@ export default function Projects() {
               {workspace?.description ||
                 "Manage all projects connected to this workspace."}
             </p>
+            {workspace && (
+              <p className="mt-3 text-xs font-medium text-slate-500">
+                {formatCreatedBy(workspace)} · {formatUpdatedBy(workspace)}
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="soft-badge">{projects.length} projects</span>
@@ -232,6 +238,9 @@ export default function Projects() {
                         </h3>
                         <p className="entity-copy">
                           {project.description || "No description added yet."}
+                        </p>
+                        <p className="mt-3 text-xs font-medium text-slate-500">
+                          {formatCreatedBy(project)} · {formatUpdatedBy(project)}
                         </p>
                       </div>
                       <span className="soft-badge">

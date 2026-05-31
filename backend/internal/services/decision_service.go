@@ -65,6 +65,8 @@ func (s *decisionService) CreateDecision(
 		Title:       req.Title,
 		Description: req.Description,
 		ProjectID:   req.ProjectID,
+		CreatedByID: &userID,
+		UpdatedByID: &userID,
 	}
 
 	err = s.decisionRepo.CreateDecision(
@@ -103,13 +105,7 @@ func (s *decisionService) GetDecisionByID(
 		return nil, err
 	}
 
-	response := &dto.DecisionDetailsResponse{
-		ID:            decision.ID,
-		Title:         decision.Title,
-		Description:   decision.Description,
-		ProjectID:     decision.ProjectID,
-		LatestVersion: latestVersion,
-	}
+	response := dto.ToDecisionDetailsResponse(*decision, latestVersion)
 
-	return response, nil
+	return &response, nil
 }

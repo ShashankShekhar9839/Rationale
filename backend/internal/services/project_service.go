@@ -63,6 +63,8 @@ func (s *projectService) CreateProject(
 		Name:        req.Name,
 		Description: req.Description,
 		WorkspaceID: req.WorkspaceID,
+		CreatedByID: &userID,
+		UpdatedByID: &userID,
 	}
 
 	err = s.projectRepo.CreateProject(project)

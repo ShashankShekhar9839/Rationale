@@ -74,6 +74,8 @@ func (s *decisionVersionService) CreateVersion(
 		Label:         req.Label,
 		Content:       req.Content,
 		DecisionID:    decisionID,
+		CreatedByID:   &userID,
+		UpdatedByID:   &userID,
 	}
 
 	err = s.versionRepo.CreateVersion(version)
@@ -130,6 +132,7 @@ func (s *decisionVersionService) UpdateVersion(
 
 	version.Label = req.Label
 	version.Content = req.Content
+	version.UpdatedByID = &userID
 
 	return s.versionRepo.UpdateVersion(version)
 }

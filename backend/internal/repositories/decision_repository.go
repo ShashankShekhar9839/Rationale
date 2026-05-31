@@ -39,7 +39,14 @@ func (r *decisionRepository) CreateDecision(
 	decision *models.Decision,
 ) error {
 
-	return r.db.Create(decision).Error
+	if err := r.db.Create(decision).Error; err != nil {
+		return err
+	}
+
+	return r.db.
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
+		First(decision, decision.ID).Error
 }
 
 func (r *decisionRepository) CheckProjectOwnership(
@@ -80,6 +87,8 @@ func (r *decisionRepository) GetDecisionsByProjectID(
 
 	err := r.db.
 		Model(&models.Decision{}).
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
 		Joins("JOIN projects ON projects.id = decisions.project_id").
 		Joins("JOIN workspaces ON workspaces.id = projects.workspace_id").
 		Joins("JOIN organizations ON organizations.id = workspaces.organization_id").
@@ -107,6 +116,8 @@ func (r *decisionRepository) GetDecisionByID(
 
 	err := r.db.
 		Model(&models.Decision{}).
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
 		Joins("JOIN projects ON projects.id = decisions.project_id").
 		Joins("JOIN workspaces ON workspaces.id = projects.workspace_id").
 		Joins("JOIN organizations ON organizations.id = workspaces.organization_id").

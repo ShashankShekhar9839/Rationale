@@ -39,7 +39,6 @@ func GetUserByEmail(email string) (models.User, error) {
 	return user, result.Error
 }
 
-
 func GetUserByUintID(id uint) (models.User, error) {
 
 	var user models.User

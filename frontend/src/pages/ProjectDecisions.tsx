@@ -5,6 +5,7 @@ import DocumentEditor from "../components/DocumentEditor";
 import { useAuth } from "../context/AuthContext";
 import * as decisionService from "../services/decisions";
 import * as projectService from "../services/projects";
+import { formatCreatedBy, formatUpdatedBy } from "../utils/audit";
 
 export default function ProjectDecisions() {
   const { token } = useAuth();
@@ -133,6 +134,11 @@ export default function ProjectDecisions() {
               Capture decision documents, patch the latest version, or create a
               new version when the reasoning changes materially.
             </p>
+            {project && (
+              <p className="mt-3 text-xs font-medium text-slate-500">
+                {formatCreatedBy(project)} · {formatUpdatedBy(project)}
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="soft-badge">{decisions.length} decisions</span>
@@ -251,6 +257,9 @@ export default function ProjectDecisions() {
                         </h3>
                         <p className="entity-copy">
                           {decision.description || "No summary added yet."}
+                        </p>
+                        <p className="mt-3 text-xs font-medium text-slate-500">
+                          {formatCreatedBy(decision)} · {formatUpdatedBy(decision)}
                         </p>
                       </div>
                       <span className="soft-badge">

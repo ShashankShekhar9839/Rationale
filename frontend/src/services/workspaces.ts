@@ -1,6 +1,7 @@
 import { API_BASE } from "./api";
+import type { AuditMeta } from "../utils/audit";
 
-export type Workspace = {
+export type Workspace = AuditMeta & {
   id: number;
   name: string;
   description?: string;

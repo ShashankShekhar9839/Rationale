@@ -5,6 +5,12 @@ import DocumentEditor from "../components/DocumentEditor";
 import DocumentRenderer from "../components/DocumentRenderer";
 import { useAuth } from "../context/AuthContext";
 import * as decisionService from "../services/decisions";
+import {
+  formatAuditDate,
+  formatAuditUser,
+  formatCreatedBy,
+  formatUpdatedBy,
+} from "../utils/audit";
 
 export default function DecisionDocument() {
   const { token } = useAuth();
@@ -197,6 +203,11 @@ export default function DecisionDocument() {
           <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
             {decision?.description || "No summary added yet."}
           </p>
+          {decision && (
+            <p className="mt-4 text-xs font-medium text-slate-500">
+              {formatCreatedBy(decision)} · {formatUpdatedBy(decision)}
+            </p>
+          )}
         </div>
 
         {loading && (
@@ -229,6 +240,9 @@ export default function DecisionDocument() {
                 <h2 className="mt-1 text-2xl font-bold text-slate-950">
                   {activeVersion.label || "Untitled version"}
                 </h2>
+                <p className="mt-2 text-xs font-medium text-slate-500">
+                  {formatCreatedBy(activeVersion)} · {formatUpdatedBy(activeVersion)}
+                </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="w-fit rounded bg-[#EAF5FF] px-3 py-1 text-xs font-bold text-[#147AD6]">
@@ -353,7 +367,12 @@ export default function DecisionDocument() {
                     {version.label || "Untitled version"}
                   </div>
                   <div className="mt-2 text-xs text-slate-500">
-                    {new Date(version.created_at).toLocaleString()}
+                    Created by {formatAuditUser(version.created_by)} ·{" "}
+                    {formatAuditDate(version.created_at)}
+                  </div>
+                  <div className="mt-1 text-xs text-slate-500">
+                    Edited by {formatAuditUser(version.updated_by)} ·{" "}
+                    {formatAuditDate(version.updated_at)}
                   </div>
                 </button>
               ))}

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { getCurrentUser } from '../services/auth'
 
 type User = {
   id?: number
@@ -36,6 +37,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user) localStorage.setItem('rationale_user', JSON.stringify(user))
     else localStorage.removeItem('rationale_user')
   }, [user])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function refreshUser() {
+      if (!token || user?.name) return
+
+      try {
+        const currentUser = await getCurrentUser(token)
+        if (!cancelled) setUser(currentUser)
+      } catch {
+        if (!cancelled) {
+          setToken(null)
+          setUser(null)
+        }
+      }
+    }
+
+    refreshUser()
+
+    return () => {
+      cancelled = true
+    }
+  }, [token, user?.name])
 
   const login = (t: string, u?: User) => {
     setToken(t)

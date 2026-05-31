@@ -28,7 +28,14 @@ func (r *decisionVersionRepository) CreateVersion(
 	version *models.DecisionVersion,
 ) error {
 
-	return r.db.Create(version).Error
+	if err := r.db.Create(version).Error; err != nil {
+		return err
+	}
+
+	return r.db.
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
+		First(version, version.ID).Error
 }
 
 func (r *decisionVersionRepository) CheckDecisionOwnership(
@@ -60,6 +67,8 @@ func (r *decisionVersionRepository) GetLatestVersion(
 	var version models.DecisionVersion
 
 	err := r.db.
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
 		Where("decision_id = ?", decisionID).
 		Order("version_number DESC").
 		First(&version).Error
@@ -78,6 +87,8 @@ func (r *decisionVersionRepository) GetVersionsByDecisionID(
 	var versions []models.DecisionVersion
 
 	err := r.db.
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
 		Where("decision_id = ?", decisionID).
 		Order("version_number DESC").
 		Find(&versions).Error
@@ -98,6 +109,8 @@ func (r *decisionVersionRepository) GetVersionByID(
 
 	err := r.db.
 		Model(&models.DecisionVersion{}).
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
 		Joins("JOIN decisions ON decisions.id = decision_versions.decision_id").
 		Joins("JOIN projects ON projects.id = decisions.project_id").
 		Joins("JOIN workspaces ON workspaces.id = projects.workspace_id").

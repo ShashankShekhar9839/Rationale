@@ -40,14 +40,7 @@ func (h *WorkspaceHandler) CreateWorkspace(c *gin.Context) {
 		return
 	}
 
-	response := dto.WorkspaceResponse{
-		ID:             workspace.ID,
-		Name:           workspace.Name,
-		Description:    workspace.Description,
-		OrganizationID: workspace.OrganizationID,
-	}
-
-	c.JSON(http.StatusCreated, response)
+	c.JSON(http.StatusCreated, dto.ToWorkspaceResponse(*workspace))
 }
 
 func (h *WorkspaceHandler) GetWorkspaces(c *gin.Context) {
@@ -65,19 +58,7 @@ func (h *WorkspaceHandler) GetWorkspaces(c *gin.Context) {
 		return
 	}
 
-	response := make([]dto.WorkspaceResponse, 0, len(workspaces))
-
-	for _, workspace := range workspaces {
-
-		response = append(response, dto.WorkspaceResponse{
-			ID:             workspace.ID,
-			Name:           workspace.Name,
-			Description:    workspace.Description,
-			OrganizationID: workspace.OrganizationID,
-		})
-	}
-
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, dto.ToWorkspaceResponseList(workspaces))
 }
 
 func (h *WorkspaceHandler) GetWorkspaceByID(
@@ -113,12 +94,5 @@ func (h *WorkspaceHandler) GetWorkspaceByID(
 		return
 	}
 
-	response := dto.WorkspaceResponse{
-		ID:             workspace.ID,
-		Name:           workspace.Name,
-		Description:    workspace.Description,
-		OrganizationID: workspace.OrganizationID,
-	}
-
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, dto.ToWorkspaceResponse(*workspace))
 }

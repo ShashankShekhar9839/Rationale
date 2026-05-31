@@ -7,5 +7,5 @@ import (
 
 // Health returns a simple OK status for health checks
 func Health(c *gin.Context) {
-    utils.SuccessResponse(c, 200, "ok", gin.H{"status": "ok"})
+	utils.SuccessResponse(c, 200, "ok", gin.H{"status": "ok"})
 }

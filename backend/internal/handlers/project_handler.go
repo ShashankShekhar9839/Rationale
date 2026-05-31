@@ -48,14 +48,7 @@ func (h *ProjectHandler) CreateProject(
 		return
 	}
 
-	response := dto.ProjectResponse{
-		ID:          project.ID,
-		Name:        project.Name,
-		Description: project.Description,
-		WorkspaceID: project.WorkspaceID,
-	}
-
-	c.JSON(http.StatusCreated, response)
+	c.JSON(http.StatusCreated, dto.ToProjectResponse(*project))
 }
 
 func (h *ProjectHandler) GetProjects(
@@ -63,8 +56,6 @@ func (h *ProjectHandler) GetProjects(
 ) {
 
 	userID := c.MustGet("userID").(uint)
-
-	var projects []dto.ProjectResponse
 
 	workspaceIDParam := c.Query("workspace_id")
 
@@ -97,17 +88,7 @@ func (h *ProjectHandler) GetProjects(
 		return
 	}
 
-	projects = make([]dto.ProjectResponse, 0, len(projectModels))
-	for _, project := range projectModels {
-		projects = append(projects, dto.ProjectResponse{
-			ID:          project.ID,
-			Name:        project.Name,
-			Description: project.Description,
-			WorkspaceID: project.WorkspaceID,
-		})
-	}
-
-	c.JSON(http.StatusOK, projects)
+	c.JSON(http.StatusOK, dto.ToProjectResponseList(projectModels))
 }
 
 func (h *ProjectHandler) GetProjectByID(
@@ -143,12 +124,5 @@ func (h *ProjectHandler) GetProjectByID(
 		return
 	}
 
-	response := dto.ProjectResponse{
-		ID:          project.ID,
-		Name:        project.Name,
-		Description: project.Description,
-		WorkspaceID: project.WorkspaceID,
-	}
-
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, dto.ToProjectResponse(*project))
 }

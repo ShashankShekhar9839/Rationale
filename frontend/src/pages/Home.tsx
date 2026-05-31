@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import { useAuth } from "../context/AuthContext";
 import * as orgService from "../services/organizations";
 import * as workspaceService from "../services/workspaces";
+import { formatCreatedBy, formatUpdatedBy } from "../utils/audit";
 
 export default function Home() {
   const { token, user } = useAuth();
@@ -337,6 +338,9 @@ export default function Home() {
                         </h3>
                         <p className="entity-copy">
                           {workspace.description || "No description added yet."}
+                        </p>
+                        <p className="mt-3 text-xs font-medium text-slate-500">
+                          {formatCreatedBy(workspace)} · {formatUpdatedBy(workspace)}
                         </p>
                       </div>
                       <span className="soft-badge">

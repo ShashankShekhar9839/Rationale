@@ -20,6 +20,8 @@ export type AuthResponse = {
   };
 };
 
+export type AuthUser = NonNullable<AuthResponse["user"]>;
+
 type ApiResponse<T> = {
   success: boolean;
   message?: string;
@@ -76,4 +78,14 @@ export async function login(payload: LoginRequest): Promise<AuthResponse> {
   });
 
   return handleApiResponse<AuthResponse>(res);
+}
+
+export async function getCurrentUser(token: string): Promise<AuthUser> {
+  const res = await fetch(`${API_BASE}/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return handleApiResponse<AuthUser>(res);
 }

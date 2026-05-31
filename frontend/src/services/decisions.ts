@@ -1,13 +1,14 @@
 import { API_BASE } from "./api";
+import type { AuditMeta } from "../utils/audit";
 
-export type Decision = {
+export type Decision = AuditMeta & {
   id: number;
   title: string;
   description?: string;
   project_id: number;
 };
 
-export type DecisionVersion = {
+export type DecisionVersion = AuditMeta & {
   id: number;
   version_number: number;
   label: string;
@@ -15,7 +16,7 @@ export type DecisionVersion = {
   decision_id: number;
 };
 
-export type DecisionVersionHistory = {
+export type DecisionVersionHistory = AuditMeta & {
   id: number;
   version_number: number;
   label: string;
@@ -55,6 +56,10 @@ function normalizeVersion(version: any): DecisionVersion {
     label: version.label ?? version.Label ?? "",
     content: version.content ?? version.Content ?? "",
     decision_id: version.decision_id ?? version.DecisionID ?? 0,
+    created_at: version.created_at ?? version.CreatedAt,
+    updated_at: version.updated_at ?? version.UpdatedAt,
+    created_by: version.created_by ?? version.CreatedBy ?? null,
+    updated_by: version.updated_by ?? version.UpdatedBy ?? null,
   };
 }
 
@@ -64,6 +69,10 @@ function normalizeDecisionDetails(decision: any): DecisionDetails {
     title: decision.title ?? decision.Title ?? "",
     description: decision.description ?? decision.Description ?? "",
     project_id: decision.project_id ?? decision.ProjectID ?? 0,
+    created_at: decision.created_at ?? decision.CreatedAt,
+    updated_at: decision.updated_at ?? decision.UpdatedAt,
+    created_by: decision.created_by ?? decision.CreatedBy ?? null,
+    updated_by: decision.updated_by ?? decision.UpdatedBy ?? null,
     latest_version: decision.latest_version
       ? normalizeVersion(decision.latest_version)
       : null,

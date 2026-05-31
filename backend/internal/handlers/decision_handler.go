@@ -50,14 +50,7 @@ func (h *DecisionHandler) CreateDecision(
 		return
 	}
 
-	response := dto.DecisionResponse{
-		ID:          decision.ID,
-		Title:       decision.Title,
-		Description: decision.Description,
-		ProjectID:   decision.ProjectID,
-	}
-
-	c.JSON(http.StatusCreated, response)
+	c.JSON(http.StatusCreated, dto.ToDecisionResponse(*decision))
 }
 
 func (h *DecisionHandler) GetDecisionsByProjectID(
@@ -93,28 +86,9 @@ func (h *DecisionHandler) GetDecisionsByProjectID(
 		return
 	}
 
-	response := make(
-		[]dto.DecisionResponse,
-		0,
-		len(decisions),
-	)
-
-	for _, decision := range decisions {
-
-		response = append(
-			response,
-			dto.DecisionResponse{
-				ID:          decision.ID,
-				Title:       decision.Title,
-				Description: decision.Description,
-				ProjectID:   decision.ProjectID,
-			},
-		)
-	}
-
 	c.JSON(
 		http.StatusOK,
-		response,
+		dto.ToDecisionResponseList(decisions),
 	)
 }
 

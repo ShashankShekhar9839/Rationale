@@ -44,7 +44,14 @@ func (r *projectRepository) CreateProject(
 	project *models.Project,
 ) error {
 
-	return r.db.Create(project).Error
+	if err := r.db.Create(project).Error; err != nil {
+		return err
+	}
+
+	return r.db.
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
+		First(project, project.ID).Error
 }
 
 func (r *projectRepository) CheckWorkspaceOwnership(
@@ -81,6 +88,8 @@ func (r *projectRepository) GetProjects(
 
 	err := r.db.
 		Model(&models.Project{}).
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
 		Joins(
 			"JOIN workspaces ON workspaces.id = projects.workspace_id",
 		).
@@ -91,6 +100,7 @@ func (r *projectRepository) GetProjects(
 			"organizations.owner_id = ?",
 			userID,
 		).
+		Order("projects.created_at DESC").
 		Find(&projects).Error
 
 	if err != nil {
@@ -109,6 +119,8 @@ func (r *projectRepository) GetProjectsByWorkspaceID(
 
 	err := r.db.
 		Model(&models.Project{}).
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
 		Joins(
 			"JOIN workspaces ON workspaces.id = projects.workspace_id",
 		).
@@ -120,6 +132,7 @@ func (r *projectRepository) GetProjectsByWorkspaceID(
 			workspaceID,
 			userID,
 		).
+		Order("projects.created_at DESC").
 		Find(&projects).Error
 
 	if err != nil {
@@ -137,6 +150,8 @@ func (r *projectRepository) GetProjectByID(
 	var project models.Project
 
 	err := r.db.
+		Preload("CreatedBy").
+		Preload("UpdatedBy").
 		Joins(
 			"JOIN workspaces ON workspaces.id = projects.workspace_id",
 		).

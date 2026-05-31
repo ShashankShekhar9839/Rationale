@@ -10,19 +10,18 @@ import (
 
 type WorkspaceService interface {
 	CreateWorkspace(
-    userID uint,
-    req dto.CreateWorkspaceRequest,
-) (*models.Workspace, error)
+		userID uint,
+		req dto.CreateWorkspaceRequest,
+	) (*models.Workspace, error)
 
-GetWorkspacesByUserID(
-	userID uint,
-) ([]models.Workspace, error)
+	GetWorkspacesByUserID(
+		userID uint,
+	) ([]models.Workspace, error)
 
-GetWorkspaceByID(
-	workspaceID uint,
-	userID uint,
-) (*models.Workspace, error)
-
+	GetWorkspaceByID(
+		workspaceID uint,
+		userID uint,
+	) (*models.Workspace, error)
 }
 
 type workspaceService struct {
@@ -59,6 +58,8 @@ func (s *workspaceService) CreateWorkspace(
 		Name:           req.Name,
 		Description:    req.Description,
 		OrganizationID: req.OrganizationID,
+		CreatedByID:    &userID,
+		UpdatedByID:    &userID,
 	}
 
 	err = s.workspaceRepo.CreateWorkspace(workspace)

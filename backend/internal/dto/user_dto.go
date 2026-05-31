@@ -7,11 +7,11 @@ import (
 )
 
 type UserResponse struct {
-	ID        uint
-	Name      string
-	Email     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uint      `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type CreateUserRequest struct {
